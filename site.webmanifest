@@ -1,0 +1,24 @@
+{
+  "name": "Multilingual Programming Playground",
+  "short_name": "MPL Playground",
+  "description": "Interactive playground for the Multilingual Programming Language with Python and WASM execution.",
+  "start_url": "/playground/",
+  "scope": "/playground/",
+  "display": "standalone",
+  "background_color": "#060614",
+  "theme_color": "#060614",
+  "icons": [
+    {
+      "src": "/playground/assets/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/playground/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
