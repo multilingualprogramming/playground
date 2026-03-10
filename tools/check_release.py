@@ -20,7 +20,7 @@ README_PATH = ROOT / "README.md"
 MANIFEST_PATH = ROOT / "site.webmanifest"
 ROBOTS_PATH = ROOT / "robots.txt"
 SITEMAP_PATH = ROOT / "sitemap.xml"
-PLAYGROUND_JS_PATH = ROOT / "assets" / "playground.js"
+EXAMPLES_JS_PATH = ROOT / "assets" / "examples.js"
 
 
 def read_text(path: Path) -> str:
@@ -35,9 +35,9 @@ def expect_match(pattern: str, text: str, label: str) -> str:
 
 
 def parse_const_keys(script: str, const_name: str) -> set[str]:
-    match = re.search(rf"const {const_name} = \{{(.*?)^\}};", script, re.MULTILINE | re.DOTALL)
+    match = re.search(rf"export const {const_name} = \{{(.*?)^\}};", script, re.MULTILINE | re.DOTALL)
     if not match:
-        raise ValueError(f"Could not parse {const_name} from assets/playground.js.")
+        raise ValueError(f"Could not parse {const_name} from assets/examples.js.")
     return set(re.findall(r"^\s*([a-z]{2}):\s*`", match.group(1), re.MULTILINE))
 
 
@@ -60,7 +60,7 @@ def main() -> int:
         manifest = json.loads(read_text(MANIFEST_PATH))
         robots_text = read_text(ROBOTS_PATH)
         sitemap_root = ET.fromstring(read_text(SITEMAP_PATH))
-        playground_js = read_text(PLAYGROUND_JS_PATH)
+        examples_js = read_text(EXAMPLES_JS_PATH)
     except Exception as exc:
         print(f"release check failed to read repository files: {exc}", file=sys.stderr)
         return 1
@@ -128,9 +128,16 @@ def main() -> int:
 
     for required_rel_path in [
         Path("assets/playground.css"),
-        Path("assets/playground.js"),
+        Path("assets/main.js"),
+        Path("assets/editor.js"),
+        Path("assets/runtime.js"),
+        Path("assets/ui.js"),
+        Path("assets/theme.js"),
+        Path("assets/i18n.js"),
+        Path("assets/examples.js"),
         Path("assets/images/og-image.svg"),
         Path("assets/images/logo.svg"),
+        Path("assets/images/favicon.svg"),
         Path("apple-touch-icon.png"),
         Path("favicon.ico"),
     ]:
@@ -144,13 +151,20 @@ def main() -> int:
             errors.append(f"Manifest icon source does not exist: {src}.")
 
     language_options = set(re.findall(r'<option value="([a-z]{2})">', index_text))
-    basic_examples = parse_const_keys(playground_js, "EXAMPLES")
-    advanced_examples = parse_const_keys(playground_js, "EXAMPLES_ADVANCED")
+    basic_examples = parse_const_keys(examples_js, "EXAMPLES")
+    medium_examples = parse_const_keys(examples_js, "EXAMPLES_MEDIUM")
+    advanced_examples = parse_const_keys(examples_js, "EXAMPLES_ADVANCED")
 
     if language_options != basic_examples:
         errors.append(
             "Language dropdown values do not match EXAMPLES keys: "
             f"options={sorted(language_options)}, examples={sorted(basic_examples)}."
+        )
+
+    if language_options != medium_examples:
+        errors.append(
+            "Language dropdown values do not match EXAMPLES_MEDIUM keys: "
+            f"options={sorted(language_options)}, medium={sorted(medium_examples)}."
         )
 
     if language_options != advanced_examples:
