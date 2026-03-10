@@ -48,10 +48,10 @@
       rel="stylesheet">
 
     <!-- Pyodide -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 
     <!-- wabt.js: WAT → binary WASM -->
-    <script src="https://cdn.jsdelivr.net/npm/wabt@1.0.36/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wabt@1.0.38/index.js"></script>
 
     <!-- CodeMirror 5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
@@ -902,7 +902,8 @@
         box-shadow: 0 0 6px var(--accent2-glow);
       }
 
-      #wat-split {
+      #wat-split,
+      #rust-split {
         display: flex;
         flex-direction: column;
         gap: .5rem;
@@ -911,7 +912,8 @@
         overflow: hidden;
       }
 
-      #wat-code-wrap {
+      #wat-code-wrap,
+      #rust-code-wrap {
         flex: 3;
         min-height: 0;
         display: flex;
@@ -919,7 +921,8 @@
         gap: .25rem;
       }
 
-      #wasm-exec-wrap {
+      #wasm-exec-wrap,
+      #rust-exec-wrap {
         flex: 1;
         min-height: 80px;
         display: flex;
@@ -928,7 +931,9 @@
       }
 
       #wat-view,
-      #wasm-exec-console {
+      #wasm-exec-console,
+      #rust-view,
+      #rust-run-console {
         min-height: 0;
       }
 
@@ -974,8 +979,108 @@
         box-shadow: 0 0 4px var(--green);
       }
 
+      /* ── Example select ──────────────────────────────────────────── */
+      #example-select {
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-size: .78rem;
+        font-family: var(--sans);
+        padding: .3rem .65rem;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+      }
+
+      #example-select:hover {
+        border-color: var(--accent);
+        background: var(--surface3);
+      }
+
+      #example-select:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* ── Language select focus ────────────────────────────────────── */
+      #lang-select:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* ── Kbd hint ─────────────────────────────────────────────────── */
+      .kbd-hint {
+        font-size: .68rem;
+        opacity: 0.65;
+        font-family: var(--mono);
+        margin-left: .25rem;
+      }
+
+      /* ── Panel toolbar (copy button bar above pane content) ────────── */
+      .panel-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        flex-shrink: 0;
+        padding: .15rem 0;
+      }
+
+      /* ── Copy button ──────────────────────────────────────────────── */
+      .copy-btn {
+        background: var(--surface3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        font-size: .7rem;
+        font-family: var(--sans);
+        padding: .2rem .55rem;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .copy-btn.copied {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+
+      /* Inline variant used inside .wat-label rows */
+      .copy-btn-inline {
+        margin-left: auto;
+      }
+
+      .wat-label {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+      }
+
+      /* ── Error line highlight ─────────────────────────────────────── */
+      .error-line {
+        background: rgba(248, 113, 113, 0.14) !important;
+      }
+
       /* ── Responsive ───────────────────────────────────────────────── */
       @media (max-width: 800px) {
+        html,
+        body {
+          overflow: auto;
+          height: auto;
+        }
+
+        #app {
+          height: auto;
+          min-height: 100vh;
+        }
+
         #main {
           grid-template-columns: 1fr;
           grid-template-rows: 48vh 4px 1fr;
@@ -1001,6 +1106,15 @@
         .pipeline-flow {
           display: none;
         }
+
+        #toolbar {
+          flex-wrap: wrap;
+          row-gap: .4rem;
+        }
+
+        #example-select {
+          max-width: 110px;
+        }
       }
     </style>
   </head>
@@ -1019,7 +1133,7 @@
           <a id="home-link" class="nav-home" href="./">Home</a>
           <a class="nav-github" href="https://github.com/johnsamuelwrites/multilingual" target="_blank"
             rel="noopener">GitHub</a>
-          <button id="theme-toggle" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
+          <button type="button" id="theme-toggle" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
         </nav>
       </header>
 
@@ -1027,7 +1141,7 @@
       <div id="toolbar">
         <label for="lang-select">Language</label>
         <div class="lang-wrap">
-          <select id="lang-select" title="Select programming language">
+          <select id="lang-select" aria-label="Select human language" title="Select programming language">
             <option value="en">English (en)</option>
             <option value="fr">Français (fr)</option>
             <option value="es">Español (es)</option>
@@ -1048,11 +1162,20 @@
           </select>
         </div>
 
-        <button id="run-btn" class="btn" disabled title="Run (Ctrl+Enter / Cmd+Enter)">
-          ▶ Run
+        <label for="example-select">Example</label>
+        <select id="example-select" aria-label="Select example complexity" title="Switch between basic and advanced example">
+          <option value="basics">Basics</option>
+          <option value="advanced">Advanced</option>
+        </select>
+
+        <button type="button" id="run-btn" class="btn" disabled title="Run (Ctrl+Enter / Cmd+Enter)">
+          ▶ Run <span class="kbd-hint">⌃↵</span>
         </button>
-        <button id="clear-btn" class="btn" title="Clear output">
+        <button type="button" id="clear-btn" class="btn" title="Clear output">
           ✕ Clear
+        </button>
+        <button type="button" id="share-btn" class="btn" title="Copy permalink to clipboard">
+          ⇗ Share
         </button>
 
         <div id="status-bar">
@@ -1087,27 +1210,33 @@
         <!-- Output pane -->
         <div id="output-pane" class="pane">
           <div class="tabs">
-            <button class="tab-btn active" data-tab="output">
+            <button type="button" class="tab-btn active" data-tab="output">
               <span class="tab-icon">◉</span> Output
             </button>
-            <button class="tab-btn" data-tab="python">
+            <button type="button" class="tab-btn" data-tab="python">
               <span class="tab-icon">⟨/⟩</span> Python
             </button>
-            <button class="tab-btn" data-tab="wat">
+            <button type="button" class="tab-btn" data-tab="wat">
               <span class="tab-icon">⬡</span> WAT / WASM
             </button>
-            <button class="tab-btn" data-tab="rust">
+            <button type="button" class="tab-btn" data-tab="rust">
               <span class="tab-icon">🦀</span> Rust / Wasmtime
             </button>
           </div>
 
           <!-- Output tab -->
           <div class="tab-panel active" id="panel-output">
+            <div class="panel-toolbar">
+              <button type="button" class="copy-btn" data-target="output-console" title="Copy output to clipboard">⎘ Copy</button>
+            </div>
             <pre id="output-console" class="console empty">Output will appear here after clicking ▶ Run.</pre>
           </div>
 
           <!-- Python tab -->
           <div class="tab-panel" id="panel-python">
+            <div class="panel-toolbar">
+              <button type="button" class="copy-btn" data-target="python-view" title="Copy Python source to clipboard">⎘ Copy</button>
+            </div>
             <pre id="python-view" class="code-view">Generated Python source will appear here.</pre>
           </div>
 
@@ -1146,13 +1275,16 @@
 
             <div id="wat-split">
               <div id="wat-code-wrap">
-                <div class="wat-label">Generated WAT source</div>
+                <div class="wat-label">Generated WAT source
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wat-view" title="Copy WAT to clipboard">⎘ Copy</button>
+                </div>
                 <pre id="wat-view" class="code-view">WAT source will appear here after clicking ▶ Run.</pre>
               </div>
               <div id="wasm-exec-wrap">
                 <div class="wat-label">
                   <span class="wasm-badge">⚙ WASM</span>
                   Native browser WebAssembly execution output
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wasm-exec-console" title="Copy WASM output to clipboard">⎘ Copy</button>
                 </div>
                 <pre id="wasm-exec-console" class="console empty">WASM execution output will appear here.</pre>
               </div>
@@ -1164,13 +1296,17 @@
             <div class="pipeline-box">
               <div class="pipeline-title">🦀 Rust bridge generated for Wasmtime workflows</div>
             </div>
-            <div id="wat-split">
-              <div id="wat-code-wrap">
-                <div class="wat-label">Generated Rust bridge source</div>
+            <div id="rust-split">
+              <div id="rust-code-wrap">
+                <div class="wat-label">Generated Rust bridge source
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-view" title="Copy Rust source to clipboard">⎘ Copy</button>
+                </div>
                 <pre id="rust-view" class="code-view">Generated Rust source will appear here after clicking ▶ Run.</pre>
               </div>
-              <div id="wasm-exec-wrap">
-                <div class="wat-label">Wasmtime run hints</div>
+              <div id="rust-exec-wrap">
+                <div class="wat-label">Wasmtime run hints
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-run-console" title="Copy run hints to clipboard">⎘ Copy</button>
+                </div>
                 <pre id="rust-run-console" class="console empty">Local run instructions will appear here.</pre>
               </div>
             </div>
@@ -1441,6 +1577,268 @@ jokaiselle x sisalla vali(1, 5):
       };
 
       /* ──────────────────────────────────────────────────────────────────
+         Advanced examples — function with if/elif/else in each language.
+         Keywords sourced from resources/usm/keywords.json.
+      ────────────────────────────────────────────────────────────────── */
+      const EXAMPLES_ADVANCED = {
+        en: `# English — functions and conditionals
+def grade(score):
+    if score >= 90:
+        return "A"
+    elif score >= 70:
+        return "B"
+    elif score >= 50:
+        return "C"
+    else:
+        return "F"
+
+for i in range(4):
+    score = 60 + i * 15
+    print("Score", score, "->", grade(score))
+`,
+        fr: `# Français — fonctions et conditions
+déf note(score):
+    si score >= 90:
+        retour "A"
+    sinonsi score >= 70:
+        retour "B"
+    sinonsi score >= 50:
+        retour "C"
+    sinon:
+        retour "F"
+
+pour i dans intervalle(4):
+    score = 60 + i * 15
+    afficher("Score", score, "->", note(score))
+`,
+        es: `# Español — funciones y condicionales
+def calificacion(score):
+    si score >= 90:
+        devolver "A"
+    sinosi score >= 70:
+        devolver "B"
+    sinosi score >= 50:
+        devolver "C"
+    sino:
+        devolver "F"
+
+para i en rango(4):
+    score = 60 + i * 15
+    imprimir("Puntuacion", score, "->", calificacion(score))
+`,
+        de: `# Deutsch — Funktionen und Bedingungen
+def bewertung(score):
+    wenn score >= 90:
+        rückgabe "A"
+    sonstwenn score >= 70:
+        rückgabe "B"
+    sonstwenn score >= 50:
+        rückgabe "C"
+    sonst:
+        rückgabe "F"
+
+für i in bereich(4):
+    score = 60 + i * 15
+    ausgeben("Punkte", score, "->", bewertung(score))
+`,
+        it: `# Italiano — funzioni e condizioni
+definisci voto(score):
+    se score >= 90:
+        ritorna "A"
+    altrimentise score >= 70:
+        ritorna "B"
+    altrimentise score >= 50:
+        ritorna "C"
+    altrimenti:
+        ritorna "F"
+
+per i in intervallo(4):
+    score = 60 + i * 15
+    stampa("Punteggio", score, "->", voto(score))
+`,
+        pt: `# Português — funções e condicionais
+defina nota(score):
+    se score >= 90:
+        retorne "A"
+    senão_se score >= 70:
+        retorne "B"
+    senão_se score >= 50:
+        retorne "C"
+    senão:
+        retorne "F"
+
+para i em intervalo(4):
+    score = 60 + i * 15
+    imprima("Pontuacao", score, "->", nota(score))
+`,
+        nl: `# Nederlands — functies en voorwaarden
+definieer cijfer(score):
+    als score >= 90:
+        retourneer "A"
+    anders_als score >= 70:
+        retourneer "B"
+    anders_als score >= 50:
+        retourneer "C"
+    anders:
+        retourneer "F"
+
+voor i in bereik(4):
+    score = 60 + i * 15
+    afdrukken("Score", score, "->", cijfer(score))
+`,
+        pl: `# Polski — funkcje i warunki
+funkcja ocena(score):
+    jesli score >= 90:
+        zwroc "A"
+    inaczej_jesli score >= 70:
+        zwroc "B"
+    inaczej_jesli score >= 50:
+        zwroc "C"
+    inaczej:
+        zwroc "F"
+
+dla n w zakres(4):
+    score = 60 + n * 15
+    drukuj("Wynik", score, "->", ocena(score))
+`,
+        sv: `# Svenska — funktioner och villkor
+definiera betyg(score):
+    om score >= 90:
+        retur "A"
+    annars_om score >= 70:
+        retur "B"
+    annars_om score >= 50:
+        retur "C"
+    annars:
+        retur "F"
+
+for n i intervall(4):
+    score = 60 + n * 15
+    skriv("Poang", score, "->", betyg(score))
+`,
+        da: `# Dansk — funktioner og betingelser
+definer karakter(score):
+    hvis score >= 90:
+        returner "A"
+    ellers_hvis score >= 70:
+        returner "B"
+    ellers_hvis score >= 50:
+        returner "C"
+    ellers:
+        returner "F"
+
+for n i interval(4):
+    score = 60 + n * 15
+    skriv("Point", score, "->", karakter(score))
+`,
+        fi: `# Suomi — funktiot ja ehdot
+maarittele arvosana(score):
+    jos score >= 90:
+        palauta "A"
+    muuten_jos score >= 70:
+        palauta "B"
+    muuten_jos score >= 50:
+        palauta "C"
+    muuten:
+        palauta "F"
+
+jokaiselle n sisalla vali(4):
+    score = 60 + n * 15
+    tulosta("Pisteet", score, "->", arvosana(score))
+`,
+        hi: `# हिन्दी — फ़ंक्शन और शर्तें
+परिभाषा श्रेणी(score):
+    अगर score >= 90:
+        वापसी "A"
+    अन्यथा_अगर score >= 70:
+        वापसी "B"
+    अन्यथा_अगर score >= 50:
+        वापसी "C"
+    वरना:
+        वापसी "F"
+
+के_लिए i में परास(4):
+    score = 60 + i * 15
+    छापो("अंक", score, "->", श्रेणी(score))
+`,
+        ar: `# العربية — دوال وشروط
+دالة تقدير(score):
+    إذا score >= 90:
+        إرجاع "A"
+    وإلا_إذا score >= 70:
+        إرجاع "B"
+    وإلا_إذا score >= 50:
+        إرجاع "C"
+    وإلا:
+        إرجاع "F"
+
+لكل i في مدى(4):
+    score = 60 + i * 15
+    اطبع("درجة", score, "->", تقدير(score))
+`,
+        bn: `# বাংলা — ফাংশন এবং শর্ত
+সংজ্ঞা গ্রেড(score):
+    যদি score >= 90:
+        ফেরত "A"
+    নাহলে_যদি score >= 70:
+        ফেরত "B"
+    নাহলে_যদি score >= 50:
+        ফেরত "C"
+    নাহলে:
+        ফেরত "F"
+
+জন্য i মধ্যে পরিসর(4):
+    score = 60 + i * 15
+    ছাপাও("স্কোর", score, "->", গ্রেড(score))
+`,
+        ta: `# தமிழ் — செயல்பாடுகள் மற்றும் நிபந்தனைகள்
+வரையறு தரம்(score):
+    என்றால் score >= 90:
+        திருப்பு "A"
+    இல்லையென்றால் score >= 70:
+        திருப்பு "B"
+    இல்லையென்றால் score >= 50:
+        திருப்பு "C"
+    இல்லை:
+        திருப்பு "F"
+
+ஒவ்வொரு i இல் வரம்பு(4):
+    score = 60 + i * 15
+    அச்சிடு("மதிப்பெண்", score, "->", தரம்(score))
+`,
+        zh: `# 中文 — 函数与条件
+函数 等级(score):
+    如果 score >= 90:
+        返回 "A"
+    否则如果 score >= 70:
+        返回 "B"
+    否则如果 score >= 50:
+        返回 "C"
+    否则:
+        返回 "F"
+
+对于 i 里 范围(4):
+    score = 60 + i * 15
+    打印("分数", score, "->", 等级(score))
+`,
+        ja: `# 日本語 — 関数と条件
+関数 等級(score):
+    もし score >= 90:
+        戻る "A"
+    でなければもし score >= 70:
+        戻る "B"
+    でなければもし score >= 50:
+        戻る "C"
+    でなければ:
+        戻る "F"
+
+毎 i 中 範囲(4):
+    score = 60 + i * 15
+    表示("スコア", score, "->", 等級(score))
+`,
+      };
+
+      /* ──────────────────────────────────────────────────────────────────
          Theme toggle
       ────────────────────────────────────────────────────────────────── */
       const THEME_KEY = 'ml-playground-theme';
@@ -1473,8 +1871,10 @@ jokaiselle x sisalla vali(1, 5):
          DOM refs
       ────────────────────────────────────────────────────────────────── */
       const $lang = document.getElementById('lang-select');
+      const $exampleSel = document.getElementById('example-select');
       const $runBtn = document.getElementById('run-btn');
       const $clearBtn = document.getElementById('clear-btn');
+      const $shareBtn = document.getElementById('share-btn');
       const $dot = document.getElementById('status-dot');
       const $status = document.getElementById('status-text');
       const $badge = document.getElementById('lang-badge');
@@ -1562,8 +1962,14 @@ jokaiselle x sisalla vali(1, 5):
       /* ──────────────────────────────────────────────────────────────────
          Language selection
       ────────────────────────────────────────────────────────────────── */
+      function loadExample(lang, level) {
+        const map = level === 'advanced' ? EXAMPLES_ADVANCED : EXAMPLES;
+        editor.setValue(map[lang] || map.en);
+      }
+
       function loadLang(lang) {
-        editor.setValue(EXAMPLES[lang] || EXAMPLES.en);
+        const level = $exampleSel ? $exampleSel.value : 'basics';
+        loadExample(lang, level);
         $badge.textContent = lang;
         editor.getWrapperElement().style.direction = lang === 'ar' ? 'rtl' : 'ltr';
         editor.setOption('lineWrapping', lang === 'ar');
@@ -1572,6 +1978,7 @@ jokaiselle x sisalla vali(1, 5):
         editor.refresh();
       }
       $lang.addEventListener('change', () => loadLang($lang.value));
+      $exampleSel.addEventListener('change', () => loadExample($lang.value, $exampleSel.value));
 
       function updateCompleteFeaturesLink(lang) {
         if (!$exampleLink) return;
@@ -1810,7 +2217,7 @@ jokaiselle x sisalla vali(1, 5):
       /* ── Pyodide init ──────────────────────────────────────────────── */
       async function initPyodide() {
         pyodide = await loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.0/full/',
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/',
         });
         setStatus('Pyodide ready - installing packages...', 'loading');
         await pyodide.loadPackage('micropip');
@@ -1875,8 +2282,8 @@ _pkg_version = __version__
         }
 
         const cdnCandidates = [
-          'https://cdn.jsdelivr.net/npm/wabt@1.0.37/index.js',
-          'https://unpkg.com/wabt@1.0.37/index.js',
+          'https://cdn.jsdelivr.net/npm/wabt@1.0.38/index.js',
+          'https://unpkg.com/wabt@1.0.38/index.js',
         ];
 
         for (const src of cdnCandidates) {
@@ -2022,6 +2429,7 @@ else:
             $outCon.className = 'console has-error';
             $outCon.textContent = 'Warning: ' + errs;
             $pyView.textContent = psrc || '(no Python source generated)';
+            highlightErrorLine(errs);
           } else if (out) {
             $outCon.textContent = out;
             $pyView.textContent = psrc || '(no Python source generated)';
@@ -2108,10 +2516,12 @@ except Exception as _re:
             $rustRunCon.textContent = 'Local run instructions will appear here.';
           }
 
+          clearErrorLines();
           setStatus('Done', 'ready');
         } catch (err) {
           $outCon.className = 'console has-error';
           $outCon.textContent = 'Warning: ' + err.message;
+          highlightErrorLine(err.message);
           setStatus('Error', 'error');
           console.error(err);
         } finally {
@@ -2251,8 +2661,99 @@ except Exception as _re:
       $runBtn.addEventListener('click', runCode);
 
       /* ──────────────────────────────────────────────────────────────────
+         Error line highlighting
+      ────────────────────────────────────────────────────────────────── */
+      function clearErrorLines() {
+        for (let i = 0; i < editor.lineCount(); i++) {
+          editor.removeLineClass(i, 'background', 'error-line');
+        }
+      }
+
+      function highlightErrorLine(errText) {
+        clearErrorLines();
+        const m = errText.match(/line[:\s]+(\d+)/i)
+          || errText.match(/at line (\d+)/i)
+          || errText.match(/:(\d+):/);
+        if (!m) return;
+        const lineNum = parseInt(m[1], 10) - 1;
+        if (lineNum >= 0 && lineNum < editor.lineCount()) {
+          editor.addLineClass(lineNum, 'background', 'error-line');
+          editor.scrollIntoView({ line: lineNum, ch: 0 }, 80);
+        }
+      }
+
+      editor.on('change', clearErrorLines);
+
+      /* ──────────────────────────────────────────────────────────────────
+         Share / permalink
+      ────────────────────────────────────────────────────────────────── */
+      function initShareFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang');
+        const code = params.get('code');
+        if (!lang || !code) return;
+        try {
+          const decoded = decodeURIComponent(escape(atob(code)));
+          const opt = $lang.querySelector(`option[value="${CSS.escape(lang)}"]`);
+          if (opt) {
+            $lang.value = lang;
+            loadLang(lang);
+            editor.setValue(decoded);
+            applyEditorHighlighting(lang);
+          }
+        } catch (_) { /* ignore malformed share URL */ }
+      }
+
+      $shareBtn.addEventListener('click', () => {
+        const code = editor.getValue();
+        const lang = $lang.value;
+        let encoded;
+        try {
+          encoded = btoa(unescape(encodeURIComponent(code)));
+        } catch (_) {
+          setStatus('Share failed: code could not be encoded.', 'error');
+          return;
+        }
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = '';
+        url.searchParams.set('lang', lang);
+        url.searchParams.set('code', encoded);
+        navigator.clipboard.writeText(url.toString()).then(() => {
+          const prev = $shareBtn.textContent;
+          $shareBtn.textContent = '✓ Copied!';
+          setTimeout(() => { $shareBtn.textContent = prev; }, 2000);
+        }).catch(() => {
+          prompt('Copy this link:', url.toString());
+        });
+      });
+
+      /* ──────────────────────────────────────────────────────────────────
+         Copy buttons
+      ────────────────────────────────────────────────────────────────── */
+      document.querySelectorAll('.copy-btn[data-target]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.dataset.target);
+          if (!target) return;
+          const text = target.textContent || '';
+          navigator.clipboard.writeText(text).then(() => {
+            btn.classList.add('copied');
+            const prev = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => {
+              btn.classList.remove('copied');
+              btn.textContent = prev;
+            }, 1800);
+          }).catch(() => {
+            prompt('Copy this text:', text);
+          });
+        });
+      });
+
+      /* ──────────────────────────────────────────────────────────────────
          Boot
       ────────────────────────────────────────────────────────────────── */
+      initShareFromUrl();
       initRuntimes();
     </script>
   </body>
