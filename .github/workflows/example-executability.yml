@@ -1,0 +1,32 @@
+name: Example Executability
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install baseline package
+        run: |
+          python -m pip install --upgrade pip
+          BASELINE_VERSION=$(python -c "import pathlib, re; text = pathlib.Path('README.md').read_text(encoding='utf-8'); print(re.search(r'This repo is aligned with `multilingualprogramming` `([^`]+)`\\.', text).group(1))")
+          python -m pip install "multilingualprogramming==${BASELINE_VERSION}"
+
+      - name: Execute all example programs
+        run: python tools/check_examples.py

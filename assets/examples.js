@@ -480,13 +480,13 @@ jokaiselle n sisalla tulos:
 வரையறு ஃபிபோனாச்சி(எல்லை):
     a = 0
     b = 1
-    தொடர் = []
+    வரிசை = []
     வரை a <= எல்லை:
-        தொடர் = தொடர் + [a]
+        வரிசை = வரிசை + [a]
         tmp = a + b
         a = b
         b = tmp
-    திருப்பு தொடர்
+    திருப்பு வரிசை
 
 முடிவு = ஃபிபோனாச்சி(100)
 அச்சிடு("ஃபிபோனாச்சி தொடர்:")
@@ -687,10 +687,10 @@ definiera fakultet(n):
         retur 1
     retur n * fakultet(n - 1)
 
-resultat = [fakultet(i) for i i intervall(8)]
+resultat = [fakultet(n) for n i intervall(8)]
 skriv("Faktorial:")
-for i i intervall(8):
-    skriv(i, "! =", resultat[i])
+for n i intervall(8):
+    skriv(n, "! =", resultat[n])
 
 forsok:
     fakultet(-1)
@@ -705,10 +705,10 @@ definer fakultet(n):
         returner 1
     returner n * fakultet(n - 1)
 
-resultater = [fakultet(i) for i i interval(8)]
+resultater = [fakultet(n) for n i interval(8)]
 skriv("Fakulteter:")
-for i i interval(8):
-    skriv(i, "! =", resultater[i])
+for n i interval(8):
+    skriv(n, "! =", resultater[n])
 
 prov:
     fakultet(-1)
