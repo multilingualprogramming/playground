@@ -733,6 +733,11 @@ header {
   position: relative;
 }
 
+.console {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
 .code-view {
   white-space: pre;
   tab-size: 4;

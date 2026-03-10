@@ -600,11 +600,16 @@ export function tAutoDetected(detected, was, lang = 'en') {
     .replace('{was}', was);
 }
 
+const RTL_LANGS = new Set(['ar']);
+
 /**
  * Apply translations to all [data-i18n] elements and update button
  * title / aria-label attributes for the current language.
  */
 export function applyI18n(lang) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
     const val = t(key, lang);

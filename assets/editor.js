@@ -53,8 +53,10 @@ export function loadLang(lang) {
   const level = $exampleSel ? $exampleSel.value : 'basics';
   loadExample(lang, level);
   $badge.textContent = lang;
-  editor.getWrapperElement().style.direction = lang === 'ar' ? 'rtl' : 'ltr';
-  editor.setOption('lineWrapping', lang === 'ar');
+  const isRtl = lang === 'ar';
+  editor.getWrapperElement().style.direction = isRtl ? 'rtl' : 'ltr';
+  editor.setOption('direction', isRtl ? 'rtl' : 'ltr');
+  editor.setOption('lineWrapping', isRtl);
   applyEditorHighlighting(lang);
   updateCompleteFeaturesLink(lang);
   editor.refresh();
