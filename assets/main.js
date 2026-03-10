@@ -14,6 +14,8 @@ import { applyI18n } from './i18n.js';
 
 /* ── Theme ───────────────────────────────────────────────────────── */
 initTheme();             // applies persisted / OS theme before editor exists
+const resolvedTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+editor.setOption('theme', resolvedTheme === 'dark' ? 'dracula' : 'eclipse');
 initThemeToggle(editor); // wires the toggle button with the editor reference
 
 /* ── Keyboard shortcuts ──────────────────────────────────────────── */
