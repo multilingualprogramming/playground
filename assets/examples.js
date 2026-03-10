@@ -426,7 +426,7 @@ jokaiselle n sisalla tulos:
     tulosta(n)
 `,
   hi: `# हिन्दी — जबतक लूप और अनुक्रम
-परिभाषा fibonacci(सीमा):
+परिभाषा फिबोनाची(सीमा):
     a = 0
     b = 1
     अनुक्रम = []
@@ -437,7 +437,7 @@ jokaiselle n sisalla tulos:
         b = tmp
     वापसी अनुक्रम
 
-परिणाम = fibonacci(100)
+परिणाम = फिबोनाची(100)
 छापो("फ़िबोनाची अनुक्रम:")
 के_लिए n में परिणाम:
     छापो(n)
@@ -460,7 +460,7 @@ jokaiselle n sisalla tulos:
     اطبع(n)
 `,
   bn: `# বাংলা — যতক্ষণ লুপ ও ধারা
-সংজ্ঞা fibonacci(সীমা):
+সংজ্ঞা ফিবোনাচি(সীমা):
     a = 0
     b = 1
     ধারা = []
@@ -471,13 +471,13 @@ jokaiselle n sisalla tulos:
         b = tmp
     ফেরত ধারা
 
-ফলাফল = fibonacci(100)
+ফলাফল = ফিবোনাচি(100)
 ছাপাও("ফিবোনাচি ধারা:")
 জন্য n মধ্যে ফলাফল:
     ছাপাও(n)
 `,
   ta: `# தமிழ் — வரை சுழல்கள் மற்றும் தொடர்கள்
-வரையறு fibonacci(எல்லை):
+வரையறு ஃபிபோனாச்சி(எல்லை):
     a = 0
     b = 1
     தொடர் = []
@@ -488,13 +488,13 @@ jokaiselle n sisalla tulos:
         b = tmp
     திருப்பு தொடர்
 
-முடிவு = fibonacci(100)
+முடிவு = ஃபிபோனாச்சி(100)
 அச்சிடு("ஃபிபோனாச்சி தொடர்:")
 ஒவ்வொரு n இல் முடிவு:
     அச்சிடு(n)
 `,
   zh: `# 中文 — 当循环和数列
-函数 fibonacci(上限):
+函数 斐波那契(上限):
     a = 0
     b = 1
     数列 = []
@@ -505,13 +505,13 @@ jokaiselle n sisalla tulos:
         b = tmp
     返回 数列
 
-结果 = fibonacci(100)
+结果 = 斐波那契(100)
 打印("斐波那契数列:")
 对于 n 里 结果:
     打印(n)
 `,
   ja: `# 日本語 — 間ループと数列
-関数 fibonacci(上限):
+関数 フィボナッチ(上限):
     a = 0
     b = 1
     数列 = []
@@ -522,7 +522,7 @@ jokaiselle n sisalla tulos:
         b = tmp
     戻る 数列
 
-結果 = fibonacci(100)
+結果 = フィボナッチ(100)
 表示("フィボナッチ数列:")
 毎 n 中 結果:
     表示(n)
@@ -554,20 +554,20 @@ except ValueError as error:
     print("Caught:", error)
 `,
   fr: `# Français — récursion, compréhensions et exceptions
-déf factorial(n):
+déf factorielle(n):
     si n < 0:
         lever ValueError("entrée négative")
     si n == 0:
         retour 1
-    retour n * factorial(n - 1)
+    retour n * factorielle(n - 1)
 
-résultats = [factorial(i) pour i dans intervalle(8)]
+résultats = [factorielle(i) pour i dans intervalle(8)]
 afficher("Factorielles :")
 pour i dans intervalle(8):
     afficher(i, "! =", résultats[i])
 
 essayer:
-    factorial(-1)
+    factorielle(-1)
 sauf ValueError comme erreur:
     afficher("Capturé :", erreur)
 `,
@@ -590,164 +590,164 @@ excepto ValueError como error:
     imprimir("Capturado:", error)
 `,
   de: `# Deutsch — Rekursion, Komprehensionen und Ausnahmen
-def factorial(n):
+def fakultaet(n):
     wenn n < 0:
         auslösen ValueError("negative Eingabe")
     wenn n == 0:
         rückgabe 1
-    rückgabe n * factorial(n - 1)
+    rückgabe n * fakultaet(n - 1)
 
-ergebnisse = [factorial(i) für i in bereich(8)]
+ergebnisse = [fakultaet(i) für i in bereich(8)]
 ausgeben("Fakultäten:")
 für i in bereich(8):
     ausgeben(i, "! =", ergebnisse[i])
 
 versuchen:
-    factorial(-1)
+    fakultaet(-1)
 ausnahme ValueError als fehler:
     ausgeben("Gefangen:", fehler)
 `,
   it: `# Italiano — ricorsione, comprensioni ed eccezioni
-definisci factorial(n):
+definisci fattoriale(n):
     se n < 0:
         solleva ValueError("input negativo")
     se n == 0:
         ritorna 1
-    ritorna n * factorial(n - 1)
+    ritorna n * fattoriale(n - 1)
 
-risultati = [factorial(i) per i in intervallo(8)]
+risultati = [fattoriale(i) per i in intervallo(8)]
 stampa("Fattoriali:")
 per i in intervallo(8):
     stampa(i, "! =", risultati[i])
 
 prova:
-    factorial(-1)
+    fattoriale(-1)
 eccetto ValueError come errore:
     stampa("Catturato:", errore)
 `,
   pt: `# Português — recursão, compreensões e exceções
-defina factorial(n):
+defina fatorial(n):
     se n < 0:
         lance ValueError("entrada negativa")
     se n == 0:
         retorne 1
-    retorne n * factorial(n - 1)
+    retorne n * fatorial(n - 1)
 
-resultados = [factorial(i) para i em intervalo(8)]
+resultados = [fatorial(i) para i em intervalo(8)]
 imprima("Fatoriais:")
 para i em intervalo(8):
     imprima(i, "! =", resultados[i])
 
 tente:
-    factorial(-1)
+    fatorial(-1)
 exceto ValueError como erro:
     imprima("Capturado:", erro)
 `,
   nl: `# Nederlands — recursie, lijstbegrippen en uitzonderingen
-definieer factorial(n):
+definieer faculteit(n):
     als n < 0:
         werp ValueError("negatieve invoer")
     als n == 0:
         retourneer 1
-    retourneer n * factorial(n - 1)
+    retourneer n * faculteit(n - 1)
 
-resultaten = [factorial(i) voor i in bereik(8)]
+resultaten = [faculteit(i) voor i in bereik(8)]
 afdrukken("Faculteiten:")
 voor i in bereik(8):
     afdrukken(i, "! =", resultaten[i])
 
 probeer:
-    factorial(-1)
+    faculteit(-1)
 behalve ValueError zoals fout:
     afdrukken("Gevangen:", fout)
 `,
   pl: `# Polski — rekurencja, wyrażenia i wyjątki
-funkcja factorial(n):
+funkcja silnia(n):
     jesli n < 0:
         podnies ValueError("ujemne wejście")
     jesli n == 0:
         zwroc 1
-    zwroc n * factorial(n - 1)
+    zwroc n * silnia(n - 1)
 
-wyniki = [factorial(i) dla i w zakres(8)]
+wyniki = [silnia(i) dla i w zakres(8)]
 drukuj("Silnie:")
 dla i w zakres(8):
     drukuj(i, "! =", wyniki[i])
 
 sprobuj:
-    factorial(-1)
+    silnia(-1)
 wyjatek ValueError jako blad:
     drukuj("Złapano:", blad)
 `,
   sv: `# Svenska — rekursion, listuttryck och undantag
-definiera factorial(n):
+definiera fakultet(n):
     om n < 0:
         kasta ValueError("negativt indata")
     om n == 0:
         retur 1
-    retur n * factorial(n - 1)
+    retur n * fakultet(n - 1)
 
-resultat = [factorial(i) for i i intervall(8)]
+resultat = [fakultet(i) for i i intervall(8)]
 skriv("Faktorial:")
 for i i intervall(8):
     skriv(i, "! =", resultat[i])
 
 forsok:
-    factorial(-1)
+    fakultet(-1)
 utom ValueError som fel:
     skriv("Fångad:", fel)
 `,
   da: `# Dansk — rekursion, listeudtryk og undtagelser
-definer factorial(n):
+definer fakultet(n):
     hvis n < 0:
         kast ValueError("negativt input")
     hvis n == 0:
         returner 1
-    returner n * factorial(n - 1)
+    returner n * fakultet(n - 1)
 
-resultater = [factorial(i) for i i interval(8)]
+resultater = [fakultet(i) for i i interval(8)]
 skriv("Fakulteter:")
 for i i interval(8):
     skriv(i, "! =", resultater[i])
 
 prov:
-    factorial(-1)
+    fakultet(-1)
 undtagen ValueError som fejl:
     skriv("Fanget:", fejl)
 `,
   fi: `# Suomi — rekursio, listarakenteet ja poikkeukset
-maarittele factorial(n):
+maarittele kertoma(n):
     jos n < 0:
         nosta ValueError("negatiivinen syöte")
     jos n == 0:
         palauta 1
-    palauta n * factorial(n - 1)
+    palauta n * kertoma(n - 1)
 
-tulokset = [factorial(i) jokaiselle i sisalla vali(8)]
+tulokset = [kertoma(i) jokaiselle i sisalla vali(8)]
 tulosta("Kertomia:")
 jokaiselle i sisalla vali(8):
     tulosta(i, "! =", tulokset[i])
 
 yrita:
-    factorial(-1)
+    kertoma(-1)
 paitsi ValueError nimella virhe:
     tulosta("Kiinniotettu:", virhe)
 `,
   hi: `# हिन्दी — पुनरावृत्ति, कॉम्प्रिहेंशन और अपवाद
-परिभाषा factorial(n):
+परिभाषा क्रमगुणित(n):
     अगर n < 0:
         उठाओ ValueError("ऋणात्मक इनपुट")
     अगर n == 0:
         वापसी 1
-    वापसी n * factorial(n - 1)
+    वापसी n * क्रमगुणित(n - 1)
 
-परिणाम = [factorial(i) के_लिए i में परास(8)]
+परिणाम = [क्रमगुणित(i) के_लिए i में परास(8)]
 छापो("क्रमगुणित:")
 के_लिए i में परास(8):
     छापो(i, "! =", परिणाम[i])
 
 प्रयास:
-    factorial(-1)
+    क्रमगुणित(-1)
 अपवाद ValueError रूपमें त्रुटि:
     छापो("पकड़ा:", त्रुटि)
 `,
@@ -770,74 +770,74 @@ paitsi ValueError nimella virhe:
     اطبع("تم الإمساك:", مشكلة)
 `,
   bn: `# বাংলা — পুনরাবৃত্তি, কম্প্রিহেনশন ও ব্যতিক্রম
-সংজ্ঞা factorial(n):
+সংজ্ঞা ক্রমগুণিতক(n):
     যদি n < 0:
         তোলো ValueError("ঋণাত্মক ইনপুট")
     যদি n == 0:
         ফেরত 1
-    ফেরত n * factorial(n - 1)
+    ফেরত n * ক্রমগুণিতক(n - 1)
 
-ফলাফল = [factorial(i) জন্য i মধ্যে পরিসর(8)]
+ফলাফল = [ক্রমগুণিতক(i) জন্য i মধ্যে পরিসর(8)]
 ছাপাও("ফ্যাক্টোরিয়াল:")
 জন্য i মধ্যে পরিসর(8):
     ছাপাও(i, "! =", ফলাফল[i])
 
 চেষ্টা:
-    factorial(-1)
+    ক্রমগুণিতক(-1)
 ব্যতিক্রম ValueError হিসাবে ত্রুটি:
     ছাপাও("ধরা পড়েছে:", ত্রুটি)
 `,
   ta: `# தமிழ் — மீண்டும் அழைப்பு, புரிதல்கள் மற்றும் விதிவிலக்குகள்
-வரையறு factorial(n):
+வரையறு காரணி(n):
     என்றால் n < 0:
         எழுப்பு ValueError("எதிர்மறை உள்ளீடு")
     என்றால் n == 0:
         திருப்பு 1
-    திருப்பு n * factorial(n - 1)
+    திருப்பு n * காரணி(n - 1)
 
-முடிவுகள் = [factorial(i) ஒவ்வொரு i இல் வரம்பு(8)]
+முடிவுகள் = [காரணி(i) ஒவ்வொரு i இல் வரம்பு(8)]
 அச்சிடு("ஃபாக்டோரியல்:")
 ஒவ்வொரு i இல் வரம்பு(8):
     அச்சிடு(i, "! =", முடிவுகள்[i])
 
 முயற்சி:
-    factorial(-1)
+    காரணி(-1)
 விதிவிலக்கு ValueError ஆக பிழை:
     அச்சிடு("பிடிக்கப்பட்டது:", பிழை)
 `,
   zh: `# 中文 — 递归、列表推导和异常
-函数 factorial(n):
+函数 阶乘(n):
     如果 n < 0:
         抛出 ValueError("负数输入")
     如果 n == 0:
         返回 1
-    返回 n * factorial(n - 1)
+    返回 n * 阶乘(n - 1)
 
-结果 = [factorial(i) 对于 i 里 范围(8)]
+结果 = [阶乘(i) 对于 i 里 范围(8)]
 打印("阶乘:")
 对于 i 里 范围(8):
     打印(i, "! =", 结果[i])
 
 尝试:
-    factorial(-1)
+    阶乘(-1)
 除了 ValueError 作为 错误:
     打印("捕获:", 错误)
 `,
   ja: `# 日本語 — 再帰、内包表記、例外
-関数 factorial(n):
+関数 階乗(n):
     もし n < 0:
         発生 ValueError("負の入力")
     もし n == 0:
         戻る 1
-    戻る n * factorial(n - 1)
+    戻る n * 階乗(n - 1)
 
-結果 = [factorial(i) 毎 i 中 範囲(8)]
+結果 = [階乗(i) 毎 i 中 範囲(8)]
 表示("階乗:")
 毎 i 中 範囲(8):
     表示(i, "! =", 結果[i])
 
 試行:
-    factorial(-1)
+    階乗(-1)
 例外 ValueError として エラー:
     表示("捕捉:", エラー)
 `,
