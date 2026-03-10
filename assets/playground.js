@@ -500,14 +500,17 @@ jokaiselle n sisalla vali(4):
    Theme toggle
 ────────────────────────────────────────────────────────────────── */
 const THEME_KEY = 'ml-playground-theme';
+const $themeToggle = document.getElementById('theme-toggle');
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  document.getElementById('theme-toggle').textContent = 'Theme';
-  document.getElementById('theme-toggle').setAttribute(
-    'aria-label',
-    theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-  );
+  if ($themeToggle) {
+    $themeToggle.textContent = 'Theme';
+    $themeToggle.setAttribute(
+      'aria-label',
+      theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+    );
+  }
   localStorage.setItem(THEME_KEY, theme);
   // Switch CodeMirror theme. Guard with try/catch because applyTheme() is
   // called by initTheme() before `const editor` is initialized (TDZ).
@@ -524,10 +527,12 @@ function applyTheme(theme) {
   applyTheme(stored || preferred);
 })();
 
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-});
+if ($themeToggle) {
+  $themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+}
 
 /* ──────────────────────────────────────────────────────────────────
    DOM refs
