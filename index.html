@@ -1920,7 +1920,7 @@ _pkg_version = __version__
         try {
           pyodide.globals.set('_user_code', code);
           pyodide.globals.set('_user_lang', lang);
-          pyodide.globals.set('_supported_langs', _supported_langs);
+          pyodide.globals.set('_supported_langs', SUPPORTED_LANGS);
 
           await pyodide.runPythonAsync(`
 from multilingualprogramming.codegen.executor import ProgramExecutor
