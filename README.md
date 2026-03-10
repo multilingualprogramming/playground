@@ -1,6 +1,8 @@
 # playground
 Interactive playground for the [Multilingual Programming Language](https://github.com/johnsamuelwrites/multilingual).
 
+Current playground release: `0.1.0`
+
 ## Current baseline
 
 This repo is aligned with `multilingualprogramming` `0.6.0`.
@@ -34,3 +36,5 @@ The main document is now a thin shell. Playground styles live in `assets/playgro
 - Keep the language dropdown, language examples, and keyword source aligned with `../multilingual/multilingualprogramming/resources/usm/keywords.json`.
 - Avoid hardcoded supported-language lists in multiple places. The runtime fallback list is derived from the language selector.
 - When playground copy changes, refresh sitemap metadata in `sitemap.xml` as part of the same update.
+
+Run `python tools/check_release.py --expected-date YYYY-MM-DD` before publishing a release update. The checker validates canonical metadata, sitemap/robots/manifest consistency, version references, extracted asset presence, and language/example coverage.

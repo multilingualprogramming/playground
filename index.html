@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <!--
-  SPDX-FileCopyrightText: 2024 John Samuel <johnsamuelwrites@gmail.com>
+  SPDX-FileCopyrightText: 2026 John Samuel <johnsamuelwrites@gmail.com>
   SPDX-License-Identifier: GPL-3.0-or-later
 
-  Interactive Playground — Multilingual Programming Language
+  Interactive Playground - Multilingual Programming Language
   Architecture
-  ────────────
-  • Pyodide  — CPython 3.12 compiled to WASM; runs the full interpreter.
-  • WATCodeGenerator — walks the AST inside Pyodide; emits valid WAT.
-  • wabt.js  — WABT on WASM; compiles WAT → binary, run by the browser.
+  ------------
+  - Pyodide - CPython 3.12 compiled to WASM; runs the full interpreter.
+  - WATCodeGenerator - walks the AST inside Pyodide; emits valid WAT.
+  - wabt.js - WABT on WASM; compiles WAT -> binary, run by the browser.
 -->
 <html lang="en" data-theme="dark">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multilingual Programming — Interactive Playground</title>
+    <title>Multilingual Programming - Interactive Playground</title>
 
     <meta name="description"
       content="Interactive playground for the Multilingual Programming Language. Write multilingual code and compile to Python and WebAssembly in your browser.">
@@ -44,13 +44,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2|family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet">
 
     <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js"></script>
 
-    <!-- wabt.js: WAT → binary WASM -->
+    <!-- wabt.js: WAT -> binary WASM -->
     <script src="https://cdn.jsdelivr.net/npm/wabt@1.0.38/index.js"></script>
 
     <!-- CodeMirror 5 -->
@@ -64,25 +64,26 @@
   </head>
 
   <body>
+    <a class="skip-link" href="#main">Skip to editor and results</a>
     <div id="app">
 
-      <!-- ── Header ─────────────────────────────────────────────────── -->
+      <!-- Header -->
       <header class="glass">
         <div class="h-logo"><img src="./assets/images/logo.svg" alt="Multilingual Programming logo"></div>
         <div class="h-text">
           <div class="h-title">Multilingual Programming Language</div>
-          <div class="h-sub">Code in 17 human languages · Pyodide WASM · WAT → browser WebAssembly</div>
+          <div class="h-sub">Code in 17 human languages | Pyodide WASM | WAT -> browser WebAssembly</div>
         </div>
-        <nav class="h-nav">
+        <nav class="h-nav" aria-label="Primary">
           <a id="home-link" class="nav-home" href="./">Home</a>
           <a class="nav-github" href="https://github.com/johnsamuelwrites/multilingual" target="_blank"
             rel="noopener">GitHub</a>
-          <button type="button" id="theme-toggle" title="Toggle light / dark mode" aria-label="Toggle theme">🌙</button>
+          <button type="button" id="theme-toggle" title="Toggle light / dark mode" aria-label="Switch to light theme">Theme</button>
         </nav>
       </header>
 
-      <!-- ── Toolbar ────────────────────────────────────────────────── -->
-      <div id="toolbar">
+      <!-- Toolbar -->
+      <div id="toolbar" role="region" aria-label="Playground controls">
         <label for="lang-select">Language</label>
         <div class="lang-wrap">
           <select id="lang-select" aria-label="Select human language" title="Select programming language">
@@ -113,79 +114,83 @@
         </select>
 
         <button type="button" id="run-btn" class="btn" disabled title="Run (Ctrl+Enter / Cmd+Enter)">
-          ▶ Run <span class="kbd-hint">⌃↵</span>
+          Run <span class="kbd-hint">Ctrl+Enter</span>
         </button>
         <button type="button" id="clear-btn" class="btn" title="Clear output">
-          ✕ Clear
+          Clear
         </button>
-        <button type="button" id="share-btn" class="btn" title="Copy permalink to clipboard">
-          ⇗ Share
+        <button type="button" id="share-btn" class="btn" title="Copy permalink to clipboard" aria-label="Copy permalink to clipboard">
+          Share
         </button>
 
-        <div id="status-bar">
+        <div id="status-bar" role="status" aria-live="polite" aria-atomic="true">
           <span class="dot loading" id="status-dot"></span>
-          <span id="status-text">Loading runtimes…</span>
+          <span id="status-text">Loading runtimes...</span>
         </div>
         <div class="runtime-pill" title="Installed multilingualprogramming package version">
           <span>Package</span>
-          <strong id="package-version">loading…</strong>
+          <strong id="package-version">loading...</strong>
         </div>
       </div>
 
-      <!-- ── Main ───────────────────────────────────────────────────── -->
-      <div id="main">
+      <!-- Main -->
+      <main id="main">
 
         <!-- Editor pane -->
         <div id="editor-pane" class="pane">
-          <div class="pane-header">
-            <em class="pane-icon">✎</em>
+          <div class="pane-header" id="editor-pane-title">
             Source Code
             <span class="lang-badge" id="lang-badge">en</span>
           </div>
-          <div id="editor-wrapper">
+          <div id="editor-wrapper" aria-labelledby="editor-pane-title">
             <label for="code-area" class="sr-only">Source code editor</label>
             <textarea id="code-area"></textarea>
           </div>
         </div>
 
         <!-- Drag resizer -->
-        <div id="resizer"></div>
+        <div id="resizer" role="separator" aria-label="Resize editor and output panels" aria-controls="editor-pane output-pane"
+          aria-orientation="vertical" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" tabindex="0"></div>
 
         <!-- Output pane -->
         <div id="output-pane" class="pane">
-          <div class="tabs">
-            <button type="button" class="tab-btn active" data-tab="output">
-              <span class="tab-icon">◉</span> Output
+          <div class="tabs" role="tablist" aria-label="Output views">
+            <button type="button" class="tab-btn active" id="tab-output" role="tab" aria-selected="true"
+              aria-controls="panel-output" tabindex="0" data-tab="output">
+              Output
             </button>
-            <button type="button" class="tab-btn" data-tab="python">
-              <span class="tab-icon">⟨/⟩</span> Python
+            <button type="button" class="tab-btn" id="tab-python" role="tab" aria-selected="false"
+              aria-controls="panel-python" tabindex="-1" data-tab="python">
+              Python
             </button>
-            <button type="button" class="tab-btn" data-tab="wat">
-              <span class="tab-icon">⬡</span> WAT / WASM
+            <button type="button" class="tab-btn" id="tab-wat" role="tab" aria-selected="false"
+              aria-controls="panel-wat" tabindex="-1" data-tab="wat">
+              WAT / WASM
             </button>
-            <button type="button" class="tab-btn" data-tab="rust">
-              <span class="tab-icon">🦀</span> Rust / Wasmtime
+            <button type="button" class="tab-btn" id="tab-rust" role="tab" aria-selected="false"
+              aria-controls="panel-rust" tabindex="-1" data-tab="rust">
+              Rust / Wasmtime
             </button>
           </div>
 
           <!-- Output tab -->
-          <div class="tab-panel active" id="panel-output">
+          <div class="tab-panel active" id="panel-output" role="tabpanel" aria-labelledby="tab-output" tabindex="0">
             <div class="panel-toolbar">
-              <button type="button" class="copy-btn" data-target="output-console" title="Copy output to clipboard">⎘ Copy</button>
+              <button type="button" class="copy-btn" data-target="output-console" title="Copy output to clipboard">Copy</button>
             </div>
-            <pre id="output-console" class="console empty">Output will appear here after clicking ▶ Run.</pre>
+            <pre id="output-console" class="console empty">Output will appear here after clicking Run.</pre>
           </div>
 
           <!-- Python tab -->
-          <div class="tab-panel" id="panel-python">
+          <div class="tab-panel" id="panel-python" role="tabpanel" aria-labelledby="tab-python" tabindex="0" hidden>
             <div class="panel-toolbar">
-              <button type="button" class="copy-btn" data-target="python-view" title="Copy Python source to clipboard">⎘ Copy</button>
+              <button type="button" class="copy-btn" data-target="python-view" title="Copy Python source to clipboard">Copy</button>
             </div>
             <pre id="python-view" class="code-view">Generated Python source will appear here.</pre>
           </div>
 
           <!-- WAT / WASM tab -->
-          <div class="tab-panel" id="panel-wat">
+          <div class="tab-panel" id="panel-wat" role="tabpanel" aria-labelledby="tab-wat" tabindex="0" hidden>
             <div class="release-note">
               <p><strong>0.6.0 backend note:</strong> this tab now reflects broader WAT/WASM lowering, including
                 stateful classes, inherited methods, <code>with</code>, <code>try/except</code>, <code>lambda</code>,
@@ -195,24 +200,24 @@
 
             <!-- Pipeline diagram -->
             <div class="pipeline-box">
-              <div class="pipeline-title">⬡ WebAssembly Code Generation Pipeline</div>
+              <div class="pipeline-title">WebAssembly Code Generation Pipeline</div>
               <div class="pipeline-flow">
                 <span class="pip-node">Source (.ml)</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node">Lexer</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node">Parser</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node">AST</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node hl">WATCodeGenerator</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node hl">.wat</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node hl">wabt.js</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node hl">binary .wasm</span>
-                <span class="pip-arrow">→</span>
+                <span class="pip-arrow">-&gt;</span>
                 <span class="pip-node hl">WebAssembly.instantiate()</span>
               </div>
             </div>
@@ -220,15 +225,15 @@
             <div id="wat-split">
               <div id="wat-code-wrap">
                 <div class="wat-label">Generated WAT source
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="wat-view" title="Copy WAT to clipboard">⎘ Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wat-view" title="Copy WAT to clipboard">Copy</button>
                 </div>
-                <pre id="wat-view" class="code-view">WAT source will appear here after clicking ▶ Run.</pre>
+                <pre id="wat-view" class="code-view">WAT source will appear here after clicking Run.</pre>
               </div>
               <div id="wasm-exec-wrap">
                 <div class="wat-label">
-                  <span class="wasm-badge">⚙ WASM</span>
+                  <span class="wasm-badge">WASM</span>
                   Native browser WebAssembly execution output
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="wasm-exec-console" title="Copy WASM output to clipboard">⎘ Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wasm-exec-console" title="Copy WASM output to clipboard">Copy</button>
                 </div>
                 <pre id="wasm-exec-console" class="console empty">WASM execution output will appear here.</pre>
               </div>
@@ -236,20 +241,20 @@
           </div><!-- #panel-wat -->
 
           <!-- Rust / Wasmtime tab -->
-          <div class="tab-panel" id="panel-rust">
+          <div class="tab-panel" id="panel-rust" role="tabpanel" aria-labelledby="tab-rust" tabindex="0" hidden>
             <div class="pipeline-box">
-              <div class="pipeline-title">🦀 Rust bridge generated for Wasmtime workflows</div>
+              <div class="pipeline-title">Rust bridge generated for Wasmtime workflows</div>
             </div>
             <div id="rust-split">
               <div id="rust-code-wrap">
                 <div class="wat-label">Generated Rust bridge source
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-view" title="Copy Rust source to clipboard">⎘ Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-view" title="Copy Rust source to clipboard">Copy</button>
                 </div>
-                <pre id="rust-view" class="code-view">Generated Rust source will appear here after clicking ▶ Run.</pre>
+                <pre id="rust-view" class="code-view">Generated Rust source will appear here after clicking Run.</pre>
               </div>
               <div id="rust-exec-wrap">
                 <div class="wat-label">Wasmtime run hints
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-run-console" title="Copy run hints to clipboard">⎘ Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-run-console" title="Copy run hints to clipboard">Copy</button>
                 </div>
                 <pre id="rust-run-console" class="console empty">Local run instructions will appear here.</pre>
               </div>
@@ -257,24 +262,24 @@
           </div><!-- #panel-rust -->
 
         </div><!-- #output-pane -->
-      </div><!-- #main -->
+      </main><!-- #main -->
 
-      <!-- ── Footer ─────────────────────────────────────────────────── -->
+      <!-- Footer -->
       <footer>
         <span>
           Powered by
-          <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a> (CPython 3.12 on WASM) ·
-          <a href="https://github.com/WebAssembly/wabt" target="_blank" rel="noopener">wabt.js</a> (WAT → WASM) ·
-          <a href="https://codemirror.net" target="_blank" rel="noopener">CodeMirror</a> ·
+          <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a> (CPython 3.12 on WASM) |
+          <a href="https://github.com/WebAssembly/wabt" target="_blank" rel="noopener">wabt.js</a> (WAT -> WASM) |
+          <a href="https://codemirror.net" target="_blank" rel="noopener">CodeMirror</a> |
           <a id="complete-features-link"
             href="https://github.com/johnsamuelwrites/multilingual/blob/main/examples/complete_features_en.ml"
-            target="_blank" rel="noopener" title="Open complete feature example for the selected language">📘 Complete
-            features (en) ✨</a>
+            target="_blank" rel="noopener" title="Open complete feature example for the selected language">Complete
+            features (en)</a>
         </span>
         <span class="footer-pill">
           <span class="dot-sm"></span>
           <a href="https://github.com/johnsamuelwrites/multilingual" target="_blank" rel="noopener">
-            Source · GPL-3.0-or-later
+            Source | GPL-3.0-or-later
           </a>
         </span>
       </footer>
@@ -292,4 +297,3 @@
   </body>
 
 </html>
-

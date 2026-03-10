@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2026 John Samuel <johnsamuelwrites@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 "use strict";
 
 /* ──────────────────────────────────────────────────────────────────
@@ -497,7 +503,11 @@ const THEME_KEY = 'ml-playground-theme';
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  document.getElementById('theme-toggle').textContent = theme === 'dark' ? '🌙' : '☀️';
+  document.getElementById('theme-toggle').textContent = 'Theme';
+  document.getElementById('theme-toggle').setAttribute(
+    'aria-label',
+    theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+  );
   localStorage.setItem(THEME_KEY, theme);
   // Switch CodeMirror theme. Guard with try/catch because applyTheme() is
   // called by initTheme() before `const editor` is initialized (TDZ).
@@ -539,6 +549,12 @@ const $rustRunCon = document.getElementById('rust-run-console');
 const $exampleLink = document.getElementById('complete-features-link');
 const $packageVersion = document.getElementById('package-version');
 const $homeLink = document.getElementById('home-link');
+const $main = document.getElementById('main');
+const $resizer = document.getElementById('resizer');
+const $tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
+const $tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+const splitMediaQuery = window.matchMedia('(max-width: 800px)');
+const SPLIT_RATIO_KEY = 'ml-playground-split-ratio';
 
 function configureHomeLink() {
   if (!$homeLink) return;
@@ -567,6 +583,12 @@ const editor = CodeMirror.fromTextArea(
   }
 );
 
+editor.getWrapperElement().setAttribute('role', 'textbox');
+editor.getWrapperElement().setAttribute('aria-multiline', 'true');
+editor.getWrapperElement().setAttribute('aria-labelledby', 'editor-pane-title');
+editor.getInputField().setAttribute('aria-label', 'Source code editor');
+$outCon.setAttribute('aria-live', 'polite');
+
 function resizeEditor() {
   const w = document.getElementById('editor-wrapper');
   editor.setSize('100%', w.clientHeight);
@@ -577,38 +599,107 @@ setTimeout(resizeEditor, 60);
 /* ──────────────────────────────────────────────────────────────────
    Drag-to-resize split pane
 ────────────────────────────────────────────────────────────────── */
+function clampSplitRatio(value) {
+  return Math.max(20, Math.min(80, Number(value) || 50));
+}
+
+function isMobileSplitLayout() {
+  return splitMediaQuery.matches;
+}
+
+function persistSplitRatio(value) {
+  localStorage.setItem(SPLIT_RATIO_KEY, String(Math.round(value)));
+}
+
+function updateResizerAria(value) {
+  $resizer.setAttribute('aria-valuenow', String(Math.round(value)));
+  $resizer.setAttribute('aria-orientation', isMobileSplitLayout() ? 'horizontal' : 'vertical');
+}
+
+function applySplitRatio(value, persist = true) {
+  const ratio = clampSplitRatio(value);
+  if (isMobileSplitLayout()) {
+    $main.style.gridTemplateColumns = '1fr';
+    $main.style.gridTemplateRows = `${ratio}fr 12px ${100 - ratio}fr`;
+  } else {
+    $main.style.gridTemplateRows = '';
+    $main.style.gridTemplateColumns = `${ratio}fr 4px ${100 - ratio}fr`;
+  }
+  updateResizerAria(ratio);
+  if (persist) {
+    persistSplitRatio(ratio);
+  }
+  resizeEditor();
+}
+
 (function initResizer() {
-  const resizer = document.getElementById('resizer');
-  const main = document.getElementById('main');
-  const editorP = document.getElementById('editor-pane');
-  const outputP = document.getElementById('output-pane');
   let dragging = false;
 
-  resizer.addEventListener('mousedown', e => {
-    dragging = true;
-    resizer.classList.add('dragging');
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    e.preventDefault();
-  });
+  function updateCursor() {
+    document.body.style.cursor = isMobileSplitLayout() ? 'row-resize' : 'col-resize';
+  }
 
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const rect = main.getBoundingClientRect();
-    const pct = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
-    const clamped = Math.max(20, Math.min(80, pct));
-    main.style.gridTemplateColumns = `${clamped}fr 4px ${100 - clamped}fr`;
-    resizeEditor();
-  });
-
-  document.addEventListener('mouseup', () => {
+  function stopDragging() {
     if (!dragging) return;
     dragging = false;
-    resizer.classList.remove('dragging');
+    $resizer.classList.remove('dragging');
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
-    resizeEditor();
+  }
+
+  function pointerToRatio(event) {
+    const rect = $main.getBoundingClientRect();
+    if (isMobileSplitLayout()) {
+      return ((event.clientY - rect.top) / rect.height) * 100;
+    }
+    return ((event.clientX - rect.left) / rect.width) * 100;
+  }
+
+  function startDragging(event) {
+    dragging = true;
+    $resizer.classList.add('dragging');
+    updateCursor();
+    document.body.style.userSelect = 'none';
+    if (event.pointerId !== undefined && $resizer.setPointerCapture) {
+      $resizer.setPointerCapture(event.pointerId);
+    }
+    event.preventDefault();
+  }
+
+  $resizer.addEventListener('pointerdown', startDragging);
+
+  $resizer.addEventListener('pointermove', event => {
+    if (!dragging) return;
+    applySplitRatio(pointerToRatio(event));
   });
+
+  $resizer.addEventListener('pointerup', stopDragging);
+  $resizer.addEventListener('pointercancel', stopDragging);
+
+  document.addEventListener('keydown', event => {
+    if (document.activeElement !== $resizer) return;
+    const step = event.shiftKey ? 10 : 5;
+    const current = Number($resizer.getAttribute('aria-valuenow') || '50');
+    let next = null;
+
+    if (event.key === 'Home') next = 20;
+    if (event.key === 'End') next = 80;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = current - step;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = current + step;
+    if (next === null) return;
+
+    event.preventDefault();
+    applySplitRatio(next);
+  });
+
+  const stored = localStorage.getItem(SPLIT_RATIO_KEY);
+  applySplitRatio(stored ? Number(stored) : 50, false);
+
+  if (splitMediaQuery.addEventListener) {
+    splitMediaQuery.addEventListener('change', () => applySplitRatio(Number($resizer.getAttribute('aria-valuenow') || '50'), false));
+  } else {
+    splitMediaQuery.addListener(() => applySplitRatio(Number($resizer.getAttribute('aria-valuenow') || '50'), false));
+  }
 })();
 
 /* ──────────────────────────────────────────────────────────────────
@@ -823,14 +914,47 @@ function setStatus(msg, state) {
 /* ──────────────────────────────────────────────────────────────────
    Tab switching
 ────────────────────────────────────────────────────────────────── */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+function setActiveTab(tabName, moveFocus = false) {
+  $tabButtons.forEach(btn => {
+    const active = btn.dataset.tab === tabName;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    btn.setAttribute('tabindex', active ? '0' : '-1');
+  });
+
+  $tabPanels.forEach(panel => {
+    const active = panel.id === `panel-${tabName}`;
+    panel.classList.toggle('active', active);
+    panel.hidden = !active;
+    if (active && moveFocus) {
+      panel.focus({ preventScroll: true });
+    }
+  });
+}
+
+$tabButtons.forEach((btn, index) => {
+  btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+  btn.addEventListener('keydown', event => {
+    let nextIndex = index;
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % $tabButtons.length;
+    else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + $tabButtons.length) % $tabButtons.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = $tabButtons.length - 1;
+    else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setActiveTab(btn.dataset.tab, true);
+      return;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    $tabButtons[nextIndex].focus();
+    setActiveTab($tabButtons[nextIndex].dataset.tab);
   });
 });
+
+setActiveTab('output');
 
 /* ──────────────────────────────────────────────────────────────────
    Runtime state
@@ -858,7 +982,7 @@ async function initRuntimes() {
 
     ready = true;
     $runBtn.disabled = false;
-    const wabtNote = wabt ? '' : ' (wabt unavailable — WAT execution disabled)';
+    const wabtNote = wabt ? '' : ' (wabt unavailable - WAT execution disabled)';
     setStatus('Ready ✓  Pyodide + wabt.js' + wabtNote, 'ready');
   } catch (err) {
     setStatus('Init error: ' + err.message, 'error');
@@ -1233,8 +1357,8 @@ async function runWat(watText) {
 
     const fnList = Array.from(undefinedFunctions).slice(0, 8).join(', ');
     const localList = Array.from(undefinedLocals).slice(0, 8).join(', ');
-    const fnMore = undefinedFunctions.size > 8 ? '…' : '';
-    const localMore = undefinedLocals.size > 8 ? '…' : '';
+    const fnMore = undefinedFunctions.size > 8 ? '...' : '';
+    const localMore = undefinedLocals.size > 8 ? '...' : '';
 
     let summary = 'WAT contains unresolved symbols and cannot be compiled to WASM.';
     if (firstLocation) summary += `\nFirst parser location: ${firstLocation}`;
