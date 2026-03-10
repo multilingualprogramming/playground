@@ -10,6 +10,7 @@ import { initTheme, initThemeToggle } from './theme.js';
 import { editor, loadLang, loadExample, initLanguageKeywords, applyEditorHighlighting } from './editor.js';
 import { setStatus, initTabs, initResizer, initShareFromUrl, initShareButton, initCopyButtons, initClearButton } from './ui.js';
 import { initRuntimes, runCode } from './runtime.js';
+import { applyI18n } from './i18n.js';
 
 /* ── Theme ───────────────────────────────────────────────────────── */
 initTheme();             // applies persisted / OS theme before editor exists
@@ -33,11 +34,16 @@ const $lang       = document.getElementById('lang-select');
 const $exampleSel = document.getElementById('example-select');
 const $runBtn     = document.getElementById('run-btn');
 
-$lang.addEventListener('change', () => loadLang($lang.value));
+$lang.addEventListener('change', () => {
+  const lang = $lang.value;
+  loadLang(lang);
+  applyI18n(lang);
+});
 $exampleSel.addEventListener('change', () => loadExample($lang.value, $exampleSel.value));
 
-/* ── Initialise editor content and keyword highlighting ─────────── */
+/* ── Initialise editor content, i18n, and keyword highlighting ───── */
 loadLang('en');
+applyI18n('en');
 initLanguageKeywords().then(() => applyEditorHighlighting($lang.value));
 
 /* ── UI subsystems ───────────────────────────────────────────────── */

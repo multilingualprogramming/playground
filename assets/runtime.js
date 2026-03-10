@@ -8,6 +8,7 @@
 
 import { editor, loadLang, applyEditorHighlighting, highlightErrorLine, clearErrorLines } from './editor.js';
 import { setStatus } from './ui.js';
+import { t, tAutoDetected } from './i18n.js';
 
 /* ── DOM refs used by the runtime ───────────────────────────────── */
 const $lang        = document.getElementById('lang-select');
@@ -29,7 +30,7 @@ let ready   = false;
 
 /* ── Bootstrap both runtimes in parallel ────────────────────────── */
 export async function initRuntimes() {
-  setStatus('Loading Pyodide and wabt.js…', 'loading');
+  setStatus(t('status_loading', $lang.value), 'loading');
   $runBtn.disabled = true;
   try {
     const [pyRes, wabtRes] = await Promise.allSettled([initPyodide(), initWabt()]);
@@ -37,8 +38,8 @@ export async function initRuntimes() {
     if (wabtRes.status === 'rejected') console.warn('wabt.js failed:', wabtRes.reason);
     ready = true;
     $runBtn.disabled = false;
-    const wabtNote = wabt ? '' : ' (wabt unavailable - WAT execution disabled)';
-    setStatus('Ready ✓  Pyodide + wabt.js' + wabtNote, 'ready');
+    const wabtNote = wabt ? '' : t('status_wabt_unavailable', $lang.value);
+    setStatus(t('status_ready_full', $lang.value) + wabtNote, 'ready');
   } catch (err) {
     setStatus('Init error: ' + err.message, 'error');
     console.error(err);
@@ -48,7 +49,7 @@ export async function initRuntimes() {
 /* ── Pyodide ─────────────────────────────────────────────────────── */
 async function initPyodide() {
   pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/' });
-  setStatus('Pyodide ready - installing packages...', 'loading');
+  setStatus(t('status_packages', $lang.value), 'loading');
   await pyodide.loadPackage('micropip');
   const micropip = pyodide.pyimport('micropip');
   await micropip.install('roman');
@@ -122,11 +123,12 @@ async function initWabt() {
 
 /* ── Main execution pipeline ─────────────────────────────────────── */
 export async function runCode() {
-  if (!ready) { setStatus('Still loading...', 'loading'); return; }
+  if (!ready) { setStatus(t('status_still_loading', $lang.value), 'loading'); return; }
 
   const code = editor.getValue().replace(/\r\n/g, '\n');
+  const lang = $lang.value;
   $runBtn.disabled = true;
-  setStatus('Running...', 'loading');
+  setStatus(t('status_running', lang), 'loading');
 
   $outCon.className   = 'console';  $outCon.textContent   = '';
   $pyView.textContent = '';
@@ -134,8 +136,6 @@ export async function runCode() {
   $wasmCon.className  = 'console';  $wasmCon.textContent  = '';
   $rustView.textContent = '';
   $rustRunCon.className = 'console'; $rustRunCon.textContent = '';
-
-  const lang = $lang.value;
 
   try {
     pyodide.globals.set('_user_code', code);
@@ -234,22 +234,21 @@ else:
       $lang.value = detectedLang;
       loadLang(detectedLang);
       $outCon.className = 'console has-warning';
-      $outCon.textContent =
-        `Language auto-detected as '${detectedLang}' (was '${lang}'). ` +
-        `Language selector updated.\n\n` + (out || '(no output)');
-      $pyView.textContent = psrc || '(no Python source generated)';
+      $outCon.textContent = tAutoDetected(detectedLang, lang, detectedLang)
+        + '\n\n' + (out || t('out_no_output', detectedLang));
+      $pyView.textContent = psrc || t('out_no_python', detectedLang);
     } else if (!ok && errs) {
       $outCon.className = 'console has-error';
-      $outCon.textContent = 'Warning: ' + errs;
-      $pyView.textContent = psrc || '(no Python source generated)';
+      $outCon.textContent = t('warning_prefix', lang) + errs;
+      $pyView.textContent = psrc || t('out_no_python', lang);
       highlightErrorLine(errs);
     } else if (out) {
       $outCon.textContent = out;
-      $pyView.textContent = psrc || '(no Python source generated)';
+      $pyView.textContent = psrc || t('out_no_python', lang);
     } else {
       $outCon.className = 'console empty';
-      $outCon.textContent = '(no output)';
-      $pyView.textContent = psrc || '(no Python source generated)';
+      $outCon.textContent = t('out_no_output', lang);
+      $pyView.textContent = psrc || t('out_no_python', lang);
     }
 
     await pyodide.runPythonAsync(`
@@ -324,18 +323,18 @@ except Exception as _re:
         `   wasmtime run --invoke __multilingual_wasm_version target/wasm32-unknown-unknown/release/<crate_name>.wasm\n\n` +
         `Note: this generated Rust is a bridge scaffold (function bodies are placeholders).`;
     } else {
-      $rustView.textContent = '(no Rust source generated)';
+      $rustView.textContent = t('out_no_rust', lang);
       $rustRunCon.className = 'console empty';
-      $rustRunCon.textContent = 'Local run instructions will appear here.';
+      $rustRunCon.textContent = t('out_run_hints_placeholder', lang);
     }
 
     clearErrorLines();
-    setStatus('Done', 'ready');
+    setStatus(t('status_done', lang), 'ready');
   } catch (err) {
     $outCon.className = 'console has-error';
-    $outCon.textContent = 'Warning: ' + err.message;
+    $outCon.textContent = t('warning_prefix', lang) + err.message;
     highlightErrorLine(err.message);
-    setStatus('Error', 'error');
+    setStatus(t('status_error', lang), 'error');
     console.error(err);
   } finally {
     $runBtn.disabled = false;

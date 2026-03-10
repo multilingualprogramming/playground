@@ -84,7 +84,7 @@
 
       <!-- Toolbar -->
       <div id="toolbar" role="region" aria-label="Playground controls">
-        <label for="lang-select">Language</label>
+        <label for="lang-select" data-i18n="label_language">Language</label>
         <div class="lang-wrap">
           <select id="lang-select" aria-label="Select human language" title="Select programming language">
             <option value="en">English (en)</option>
@@ -107,20 +107,20 @@
           </select>
         </div>
 
-        <label for="example-select">Example</label>
+        <label for="example-select" data-i18n="label_example">Example</label>
         <select id="example-select" aria-label="Select example complexity" title="Switch between example levels">
-          <option value="basics">Basics</option>
-          <option value="medium">Medium</option>
-          <option value="advanced">Advanced</option>
+          <option value="basics" data-i18n="example_basics">Basics</option>
+          <option value="medium" data-i18n="example_medium">Medium</option>
+          <option value="advanced" data-i18n="example_advanced">Advanced</option>
         </select>
 
         <button type="button" id="run-btn" class="btn" disabled title="Run (Ctrl+Enter / Cmd+Enter)">
-          Run <span class="kbd-hint">Ctrl+Enter</span>
+          <span data-i18n="btn_run">Run</span> <span class="kbd-hint">Ctrl+Enter</span>
         </button>
-        <button type="button" id="clear-btn" class="btn" title="Clear output">
+        <button type="button" id="clear-btn" class="btn" data-i18n="btn_clear" title="Clear output">
           Clear
         </button>
-        <button type="button" id="share-btn" class="btn" title="Copy permalink to clipboard" aria-label="Copy permalink to clipboard">
+        <button type="button" id="share-btn" class="btn" data-i18n="btn_share" title="Copy permalink to clipboard" aria-label="Copy permalink to clipboard">
           Share
         </button>
 
@@ -140,7 +140,7 @@
         <!-- Editor pane -->
         <div id="editor-pane" class="pane">
           <div class="pane-header" id="editor-pane-title">
-            Source Code
+            <span data-i18n="pane_source">Source Code</span>
             <span class="lang-badge" id="lang-badge">en</span>
           </div>
           <div id="editor-wrapper" aria-labelledby="editor-pane-title">
@@ -157,7 +157,7 @@
         <div id="output-pane" class="pane">
           <div class="tabs" role="tablist" aria-label="Output views">
             <button type="button" class="tab-btn active" id="tab-output" role="tab" aria-selected="true"
-              aria-controls="panel-output" tabindex="0" data-tab="output">
+              aria-controls="panel-output" tabindex="0" data-tab="output" data-i18n="tab_output">
               Output
             </button>
             <button type="button" class="tab-btn" id="tab-python" role="tab" aria-selected="false"
@@ -177,7 +177,7 @@
           <!-- Output tab -->
           <div class="tab-panel active" id="panel-output" role="tabpanel" aria-labelledby="tab-output" tabindex="0">
             <div class="panel-toolbar">
-              <button type="button" class="copy-btn" data-target="output-console" title="Copy output to clipboard">Copy</button>
+              <button type="button" class="copy-btn" data-target="output-console" title="Copy output to clipboard" data-i18n="btn_copy">Copy</button>
             </div>
             <pre id="output-console" class="console empty">Output will appear here after clicking Run.</pre>
           </div>
@@ -185,7 +185,7 @@
           <!-- Python tab -->
           <div class="tab-panel" id="panel-python" role="tabpanel" aria-labelledby="tab-python" tabindex="0" hidden>
             <div class="panel-toolbar">
-              <button type="button" class="copy-btn" data-target="python-view" title="Copy Python source to clipboard">Copy</button>
+              <button type="button" class="copy-btn" data-target="python-view" title="Copy Python source to clipboard" data-i18n="btn_copy">Copy</button>
             </div>
             <pre id="python-view" class="code-view">Generated Python source will appear here.</pre>
           </div>
@@ -226,7 +226,7 @@
             <div id="wat-split">
               <div id="wat-code-wrap">
                 <div class="wat-label">Generated WAT source
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="wat-view" title="Copy WAT to clipboard">Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wat-view" title="Copy WAT to clipboard" data-i18n="btn_copy">Copy</button>
                 </div>
                 <pre id="wat-view" class="code-view">WAT source will appear here after clicking Run.</pre>
               </div>
@@ -234,7 +234,7 @@
                 <div class="wat-label">
                   <span class="wasm-badge">WASM</span>
                   Native browser WebAssembly execution output
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="wasm-exec-console" title="Copy WASM output to clipboard">Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="wasm-exec-console" title="Copy WASM output to clipboard" data-i18n="btn_copy">Copy</button>
                 </div>
                 <pre id="wasm-exec-console" class="console empty">WASM execution output will appear here.</pre>
               </div>
@@ -249,13 +249,13 @@
             <div id="rust-split">
               <div id="rust-code-wrap">
                 <div class="wat-label">Generated Rust bridge source
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-view" title="Copy Rust source to clipboard">Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-view" title="Copy Rust source to clipboard" data-i18n="btn_copy">Copy</button>
                 </div>
                 <pre id="rust-view" class="code-view">Generated Rust source will appear here after clicking Run.</pre>
               </div>
               <div id="rust-exec-wrap">
                 <div class="wat-label">Wasmtime run hints
-                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-run-console" title="Copy run hints to clipboard">Copy</button>
+                  <button type="button" class="copy-btn copy-btn-inline" data-target="rust-run-console" title="Copy run hints to clipboard" data-i18n="btn_copy">Copy</button>
                 </div>
                 <pre id="rust-run-console" class="console empty">Local run instructions will appear here.</pre>
               </div>

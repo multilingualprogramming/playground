@@ -7,6 +7,7 @@
 "use strict";
 
 import { editor, resizeEditor, loadLang, applyEditorHighlighting } from './editor.js';
+import { t } from './i18n.js';
 
 /* ── DOM refs ────────────────────────────────────────────────────── */
 const $dot        = document.getElementById('status-dot');
@@ -189,7 +190,7 @@ export function initShareButton(setStatusFn) {
     try {
       encoded = btoa(unescape(encodeURIComponent(code)));
     } catch (_) {
-      setStatusFn('Share failed: code could not be encoded.', 'error');
+      setStatusFn(t('share_failed', lang), 'error');
       return;
     }
     const url = new URL(window.location.href);
@@ -199,7 +200,7 @@ export function initShareButton(setStatusFn) {
     url.searchParams.set('code', encoded);
     navigator.clipboard.writeText(url.toString()).then(() => {
       const prev = $shareBtn.textContent;
-      $shareBtn.textContent = '✓ Copied!';
+      $shareBtn.textContent = t('copied', lang);
       setTimeout(() => { $shareBtn.textContent = prev; }, 2000);
     }).catch(() => { prompt('Copy this link:', url.toString()); });
   });
@@ -215,7 +216,7 @@ export function initCopyButtons() {
       navigator.clipboard.writeText(text).then(() => {
         btn.classList.add('copied');
         const prev = btn.textContent;
-        btn.textContent = '✓ Copied!';
+        btn.textContent = t('copied', $lang.value);
         setTimeout(() => { btn.classList.remove('copied'); btn.textContent = prev; }, 1800);
       }).catch(() => { prompt('Copy this text:', text); });
     });
@@ -226,15 +227,16 @@ export function initCopyButtons() {
 export function initClearButton() {
   if (!$clearBtn) return;
   $clearBtn.addEventListener('click', () => {
+    const lang = $lang.value;
     $outCon.className = 'console empty';
-    $outCon.textContent = 'Output will appear here after clicking ▶ Run.';
-    $pyView.textContent = 'Generated Python source will appear here.';
-    $watView.textContent = 'WAT source will appear here after clicking ▶ Run.';
+    $outCon.textContent = t('out_empty', lang);
+    $pyView.textContent = t('out_python_placeholder', lang);
+    $watView.textContent = t('out_wat_placeholder', lang);
     $wasmCon.className = 'console empty';
-    $wasmCon.textContent = 'WASM execution output will appear here.';
-    $rustView.textContent = 'Generated Rust source will appear here after clicking ▶ Run.';
+    $wasmCon.textContent = t('out_wasm_placeholder', lang);
+    $rustView.textContent = t('out_rust_placeholder', lang);
     $rustRunCon.className = 'console empty';
-    $rustRunCon.textContent = 'Local run instructions will appear here.';
+    $rustRunCon.textContent = t('out_run_hints_placeholder', lang);
     editor.focus();
   });
 }
