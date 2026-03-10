@@ -451,6 +451,19 @@
         white-space: nowrap;
       }
 
+      .runtime-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .34rem .7rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface2);
+        color: var(--text-muted);
+        font-size: .75rem;
+        white-space: nowrap;
+      }
+
       .dot {
         width: 8px;
         height: 8px;
@@ -814,6 +827,23 @@
         margin-bottom: .4rem;
       }
 
+      .release-note {
+        background: linear-gradient(135deg, rgba(124, 106, 247, .12) 0%, rgba(0, 212, 255, .08) 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: .8rem .95rem;
+        margin-bottom: .65rem;
+      }
+
+      .release-note p {
+        color: var(--text-muted);
+        font-size: .84rem;
+      }
+
+      .release-note strong {
+        color: var(--text);
+      }
+
       .pipeline-flow {
         display: flex;
         align-items: center;
@@ -1028,6 +1058,10 @@
           <span class="dot loading" id="status-dot"></span>
           <span id="status-text">Loading runtimes…</span>
         </div>
+        <div class="runtime-pill" title="Installed multilingualprogramming package version">
+          <span>Package</span>
+          <strong id="package-version">loading…</strong>
+        </div>
       </div>
 
       <!-- ── Main ───────────────────────────────────────────────────── -->
@@ -1078,6 +1112,9 @@
 
           <!-- WAT / WASM tab -->
           <div class="tab-panel" id="panel-wat">
+            <div class="release-note">
+              <p><strong>0.6.0 backend note:</strong> this tab now reflects broader WAT/WASM lowering, including stateful classes, inherited methods, <code>with</code>, <code>try/except</code>, <code>lambda</code>, <code>match/case</code>, <code>async/await</code>, <code>@property</code>, and bytes literals.</p>
+            </div>
 
             <!-- Pipeline diagram -->
             <div class="pipeline-box">
@@ -1444,6 +1481,7 @@ jokaiselle x sisalla vali(1, 5):
       const $rustView = document.getElementById('rust-view');
       const $rustRunCon = document.getElementById('rust-run-console');
       const $exampleLink = document.getElementById('complete-features-link');
+      const $packageVersion = document.getElementById('package-version');
       const $homeLink = document.getElementById('home-link');
 
       function configureHomeLink() {
@@ -1737,6 +1775,7 @@ jokaiselle x sisalla vali(1, 5):
       let pyodide = null;
       let wabt = null;
       let ready = false;
+      const SUPPORTED_LANGS = Array.from($lang.options).map(opt => opt.value);
 
       /* ──────────────────────────────────────────────────────────────────
          Initialise both runtimes in parallel
@@ -1793,12 +1832,19 @@ jokaiselle x sisalla vali(1, 5):
 
         // Warm-up import
         await pyodide.runPythonAsync(`
+from multilingualprogramming.version import __version__
 from multilingualprogramming.codegen.executor import ProgramExecutor
 from multilingualprogramming.codegen.wat_generator import WATCodeGenerator
 from multilingualprogramming.codegen.wasm_generator import WasmCodeGenerator
 from multilingualprogramming.lexer.lexer import Lexer
 from multilingualprogramming.parser.parser import Parser
+_pkg_version = __version__
 `);
+
+        const pkgVersion = pyodide.globals.get('_pkg_version');
+        if ($packageVersion) {
+          $packageVersion.textContent = pkgVersion || 'unknown';
+        }
       }
 
       function getWabtFactory() {
@@ -1880,12 +1926,12 @@ from multilingualprogramming.parser.parser import Parser
           // gets a useful result (with a language-mismatch notice).
           pyodide.globals.set('_user_code', code);
           pyodide.globals.set('_user_lang', lang);
+          pyodide.globals.set('_supported_langs', SUPPORTED_LANGS);
 
           await pyodide.runPythonAsync(`
 from multilingualprogramming.codegen.executor import ProgramExecutor
 
-_ALL_LANGS = ['en', 'fr', 'de', 'es', 'hi', 'ta', 'nl', 'pt', 'ar',
-              'zh', 'ja', 'ru', 'sv', 'fi', 'it', 'da', 'la']
+_ALL_LANGS = list(_supported_langs)
 
 _exec   = ProgramExecutor(language=_user_lang)
 _result = _exec.execute(_user_code)

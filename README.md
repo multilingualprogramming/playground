@@ -1,22 +1,34 @@
 # playground
 Interactive playground for the [Multilingual Programming Language](https://github.com/johnsamuelwrites/multilingual).
 
-## Live Demo
+## Current baseline
 
-Hosted on GitHub Pages — open [index.html](index.html) in your browser or visit the published URL once GitHub Pages is enabled.
+This repo is aligned with `multilingualprogramming` `0.6.0`.
+
+The current playground content highlights the expanded browser-facing WAT/WASM coverage in 0.6.0:
+
+- stateful classes and inherited method dispatch
+- `with`, `try/except`, `lambda`, `match/case`, and `async/await`
+- `@property` accessors and bytes literals
+
+The UI reads the installed package version at runtime so the page does not need a hardcoded release string.
+
+## Live demo
+
+Open [index.html](index.html) locally or publish the repository on GitHub Pages at `https://multilingualprogramming.github.io/playground/`.
 
 ## How it works
 
 The playground runs entirely in the browser:
 
-- **Pyodide** — CPython 3.12 compiled to WASM; runs the full interpreter
-- **wabt.js** — WABT on WASM; compiles WAT → binary
-- **CodeMirror 5** — editor with syntax highlighting and dark/light theme toggle
+- **Pyodide** - CPython 3.12 compiled to WASM; runs the full interpreter
+- **wabt.js** - WABT on WASM; compiles generated WAT to binary WASM in the browser
+- **CodeMirror 5** - editor with syntax highlighting and dark/light theme toggle
 
-No server required. The `multilingualprogramming` package is installed at runtime via `micropip` from PyPI.
+No server is required. The page prefers a local wheel from `assets/wheel_info.json` when present, then falls back to installing `multilingualprogramming` from PyPI via `micropip`.
 
-## GitHub Pages setup
+## Content maintenance
 
-1. Go to **Settings → Pages** in this repository
-2. Set **Source** to `Deploy from a branch`, branch `main`, folder `/ (root)`
-3. Save — GitHub will publish the playground at `https://<your-username>.github.io/playground/`
+- Keep the language dropdown, language examples, and keyword source aligned with `../multilingual/multilingualprogramming/resources/usm/keywords.json`.
+- Avoid hardcoded supported-language lists in multiple places. The runtime fallback list is derived from the language selector.
+- When playground copy changes, refresh sitemap metadata in `sitemap.xml` as part of the same update.
