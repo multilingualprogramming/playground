@@ -2108,6 +2108,7 @@ Note: this generated Rust is a bridge scaffold (function bodies are placeholders
               wasmLines.push(printBuf.join(''));
               printBuf.length = 0;
             },
+            pow_f64: (base, exp) => Math.pow(base, exp),
           },
         };
 
@@ -2220,3 +2221,5 @@ Note: this generated Rust is a bridge scaffold (function bodies are placeholders
   </body>
 
 </html>
+
+
