@@ -1996,11 +1996,11 @@ if (
         _ok = True
     except Exception as _async_exc:
         _out = _result.output or ''
-        _errs = '\n'.join(_result.errors + [f'{type(_async_exc).__name__}: {_async_exc}'])
+        _errs = '\\n'.join(_result.errors + [f'{type(_async_exc).__name__}: {_async_exc}'])
         _ok = False
 else:
     _out = _result.output or ''
-    _errs = '\n'.join(_result.errors) if _result.errors else ''
+    _errs = '\\n'.join(_result.errors) if _result.errors else ''
     _ok = _result.success
 `);
 
