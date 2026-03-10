@@ -27,6 +27,8 @@ The playground runs entirely in the browser:
 
 No server is required. The page prefers a local wheel from `assets/wheel_info.json` when present, then falls back to installing `multilingualprogramming` from PyPI via `micropip`.
 
+The main document is now a thin shell. Playground styles live in `assets/playground.css` and the application logic lives in `assets/playground.js`.
+
 ## Content maintenance
 
 - Keep the language dropdown, language examples, and keyword source aligned with `../multilingual/multilingualprogramming/resources/usm/keywords.json`.
