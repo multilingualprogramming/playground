@@ -260,15 +260,16 @@ header {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  min-width: 40px;
+  width: 40px;
   height: 34px;
-  padding: 0 .7rem;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
   cursor: pointer;
-  font-size: .9rem;
+  font-size: 1rem;
+  line-height: 1;
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
 

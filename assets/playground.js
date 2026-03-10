@@ -505,7 +505,7 @@ const $themeToggle = document.getElementById('theme-toggle');
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   if ($themeToggle) {
-    $themeToggle.textContent = 'Theme';
+    $themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
     $themeToggle.setAttribute(
       'aria-label',
       theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
