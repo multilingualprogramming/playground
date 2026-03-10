@@ -586,6 +586,22 @@ header {
   font-family: var(--mono);
   font-size: 13.5px;
   line-height: 1.65;
+  direction: ltr;
+}
+
+#editor-wrapper .CodeMirror-scroll {
+  direction: ltr;
+}
+
+#editor-wrapper .CodeMirror-line,
+#editor-wrapper .CodeMirror-line-like,
+#editor-wrapper .CodeMirror pre {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+#editor-wrapper .CodeMirror.editor-rtl .CodeMirror-lines {
+  direction: rtl;
 }
 
 #editor-wrapper .CodeMirror span.cm-keyword {
@@ -703,6 +719,7 @@ header {
   overflow: auto;
   padding: .75rem;
   min-height: 0;
+  min-width: 0;
 }
 
 .tab-panel.active {
@@ -731,6 +748,10 @@ header {
   color: var(--text);
   transition: background 0.3s, border-color 0.3s;
   position: relative;
+  min-width: 0;
+  direction: ltr;
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 .console {

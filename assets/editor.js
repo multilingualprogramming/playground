@@ -54,7 +54,9 @@ export function loadLang(lang) {
   loadExample(lang, level);
   $badge.textContent = lang;
   const isRtl = lang === 'ar';
-  editor.getWrapperElement().style.direction = isRtl ? 'rtl' : 'ltr';
+  const wrapper = editor.getWrapperElement();
+  wrapper.style.direction = 'ltr';
+  wrapper.classList.toggle('editor-rtl', isRtl);
   editor.setOption('direction', isRtl ? 'rtl' : 'ltr');
   editor.setOption('lineWrapping', isRtl);
   applyEditorHighlighting(lang);
