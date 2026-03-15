@@ -36,10 +36,13 @@ The main document is a thin shell. Playground styles live in `assets/playground.
 
 ## Release validation
 
+The pinned CI baseline lives in `requirements-build.txt`.
+
 This release line is checked in two ways:
 
 - `python tools/check_examples.py` executes all bundled example programs in each supported source language.
 - GitHub Actions runs `.github/workflows/example-executability.yml` on pushes and pull requests.
+- A scheduled compatibility workflow also checks the pinned baseline, the latest published package, and upstream `main`.
 
 ## Content maintenance
 

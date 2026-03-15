@@ -25,8 +25,7 @@ jobs:
       - name: Install baseline package
         run: |
           python -m pip install --upgrade pip
-          BASELINE_VERSION=$(python -c 'import pathlib, re; text = pathlib.Path("README.md").read_text(encoding="utf-8"); print(re.search(r"This repo is aligned with `multilingualprogramming` `([^`]+)`\.", text).group(1))')
-          python -m pip install "multilingualprogramming==${BASELINE_VERSION}"
+          python -m pip install -r requirements-build.txt
 
       - name: Validate release metadata
         run: python tools/check_release.py
