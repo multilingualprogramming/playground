@@ -49,18 +49,30 @@ export function loadExample(lang, level) {
   editor.setValue(map[lang] || map.en);
 }
 
+function sanitizeLangCode(lang) {
+  const fallback = 'en';
+  const raw = typeof lang === 'string' ? lang : fallback;
+  const allLangs = new Set([
+    ...Object.keys(EXAMPLES || {}),
+    ...Object.keys(EXAMPLES_MEDIUM || {}),
+    ...Object.keys(EXAMPLES_ADVANCED || {}),
+  ]);
+  return allLangs.has(raw) ? raw : fallback;
+}
+
 export function loadLang(lang) {
+  const safeLang = sanitizeLangCode(lang);
   const level = $exampleSel ? $exampleSel.value : 'basics';
-  loadExample(lang, level);
-  $badge.textContent = lang;
-  const isRtl = lang === 'ar';
+  loadExample(safeLang, level);
+  $badge.textContent = safeLang;
+  const isRtl = safeLang === 'ar';
   const wrapper = editor.getWrapperElement();
   wrapper.style.direction = 'ltr';
   wrapper.classList.toggle('editor-rtl', isRtl);
   editor.setOption('direction', isRtl ? 'rtl' : 'ltr');
   editor.setOption('lineWrapping', isRtl);
-  applyEditorHighlighting(lang);
-  updateCompleteFeaturesLink(lang);
+  applyEditorHighlighting(safeLang);
+  updateCompleteFeaturesLink(safeLang);
   editor.refresh();
 }
 

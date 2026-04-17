@@ -123,10 +123,11 @@ async function initWabt() {
 
 /* ── Main execution pipeline ─────────────────────────────────────── */
 export async function runCode() {
-  if (!ready) { setStatus(t('status_still_loading', $lang.value), 'loading'); return; }
+  const selectedLang = $lang.value;
+  const lang = SUPPORTED_LANGS.includes(selectedLang) ? selectedLang : 'en';
+  if (!ready) { setStatus(t('status_still_loading', lang), 'loading'); return; }
 
   const code = editor.getValue().replace(/\r\n/g, '\n');
-  const lang = $lang.value;
   $runBtn.disabled = true;
   setStatus(t('status_running', lang), 'loading');
 
