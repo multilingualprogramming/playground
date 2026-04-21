@@ -54,7 +54,7 @@ export function initTabs() {
   $tabButtons.forEach((btn, index) => {
     btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
     btn.addEventListener('keydown', event => {
-      let nextIndex = index;
+      let nextIndex;
       if (event.key === 'ArrowRight') nextIndex = (index + 1) % $tabButtons.length;
       else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + $tabButtons.length) % $tabButtons.length;
       else if (event.key === 'Home') nextIndex = 0;
