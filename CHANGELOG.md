@@ -31,4 +31,6 @@ First tagged release of the browser playground.
 
 ## Unreleased
 
-- No entries yet.
+### Changed
+
+- Updated the playground's complete-feature example links and visible source-extension copy from `.ml` to `.multi` to match the renamed upstream example files.

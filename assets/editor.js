@@ -79,7 +79,7 @@ export function loadLang(lang) {
 function updateCompleteFeaturesLink(lang) {
   if (!$exampleLink) return;
   const langCode = lang || 'en';
-  $exampleLink.href = `https://github.com/johnsamuelwrites/multilingual/blob/main/examples/complete_features_${langCode}.ml`;
+  $exampleLink.href = `https://github.com/johnsamuelwrites/multilingual/blob/main/examples/complete_features_${langCode}.multi`;
   $exampleLink.textContent = `📘 Complete features (${langCode}) ✨`;
 }
 

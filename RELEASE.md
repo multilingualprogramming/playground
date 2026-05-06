@@ -20,6 +20,7 @@ Prepare a playground release when at least one of these changes:
 2. Update [`README.md`](README.md) baseline text if the aligned version changed.
 3. Update visible release copy in [`index.html`](index.html), especially the backend note in the WAT / WASM tab.
 4. Refresh examples and language metadata in [`assets/examples.js`](assets/examples.js), [`assets/editor.js`](assets/editor.js), and related runtime modules if language coverage changed.
+   Also verify that visible source-extension copy and upstream example links still match the current example filename convention, currently `.multi`.
 5. Verify metadata files:
    [`sitemap.xml`](sitemap.xml),
    [`robots.txt`](robots.txt),

@@ -47,6 +47,7 @@ This release line is checked in two ways:
 ## Content maintenance
 
 - Keep the language dropdown, language examples, and keyword source aligned with `../multilingual/multilingualprogramming/resources/usm/keywords.json`.
+- Keep playground example-source links aligned with the upstream example filename convention, which is now `.multi`.
 - Avoid hardcoded supported-language lists in multiple places. The runtime fallback list is derived from the language selector.
 - When playground copy changes, refresh sitemap metadata in `sitemap.xml` as part of the same update.
 
