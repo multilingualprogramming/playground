@@ -28,11 +28,13 @@ The playground runs entirely in the browser:
 
 - **Pyodide** - CPython 3.12 compiled to WASM; runs the full interpreter
 - **wabt.js** - WABT on WASM; compiles generated WAT to binary WASM in the browser
-- **CodeMirror 5** - editor with syntax highlighting and dark/light theme toggle
+- **Monaco Editor** - browser editor with generated multilingual syntax highlighting and dark/light theme toggle
 
 No server is required. The page prefers a local wheel from `assets/wheel_info.json` when present, then falls back to installing `multilingualprogramming` from PyPI via `micropip`.
 
 The main document is a thin shell. Playground styles live in `assets/playground.css`, and the application logic is split across `assets/main.js`, `assets/editor.js`, `assets/runtime.js`, `assets/ui.js`, `assets/theme.js`, `assets/i18n.js`, and `assets/examples.js`.
+
+The editor syntax layer is generated from the sibling `tree-sitter-multilingual` repository at `https://github.com/multilingualprogramming/tree-sitter-multilingual`. The playground ships a pinned `assets/monarch.json` derived from that grammar so browser highlighting stays aligned with upstream keyword and grammar updates.
 
 ## Release validation
 
@@ -41,6 +43,7 @@ The pinned CI baseline lives in `requirements-build.txt`.
 This release line is checked in two ways:
 
 - `python tools/check_examples.py` executes all bundled example programs in each supported source language.
+- `python tools/check_monarch_sync.py --tree-sitter-root ../tree-sitter-multilingual` verifies that the pinned Monaco tokenizer still matches the generated grammar artifact from `https://github.com/multilingualprogramming/tree-sitter-multilingual`.
 - GitHub Actions runs `.github/workflows/example-executability.yml` on pushes and pull requests.
 - A scheduled compatibility workflow also checks the pinned baseline, the latest published package, and upstream `main`.
 

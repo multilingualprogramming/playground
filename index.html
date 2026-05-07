@@ -53,13 +53,6 @@
     <!-- wabt.js: WAT -> binary WASM -->
     <script src="https://cdn.jsdelivr.net/npm/wabt@1.0.38/index.js"></script>
 
-    <!-- CodeMirror 5 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
-      crossorigin="anonymous">
-    <link rel="stylesheet" id="cm-theme-dark"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" id="cm-theme-light"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="./assets/playground.css">
   </head>
 
@@ -144,8 +137,7 @@
             <span class="lang-badge" id="lang-badge">en</span>
           </div>
           <div id="editor-wrapper" aria-labelledby="editor-pane-title">
-            <label for="code-area" class="sr-only">Source code editor</label>
-            <textarea id="code-area"></textarea>
+            <div id="code-area" role="textbox" aria-multiline="true" aria-label="Source code editor"></div>
           </div>
         </div>
 
@@ -271,7 +263,7 @@
           Powered by
           <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a> (CPython 3.12 on WASM) |
           <a href="https://github.com/WebAssembly/wabt" target="_blank" rel="noopener">wabt.js</a> (WAT -> WASM) |
-          <a href="https://codemirror.net" target="_blank" rel="noopener">CodeMirror</a> |
+          <a href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener">Monaco Editor</a> |
           <a id="complete-features-link"
             href="https://github.com/johnsamuelwrites/multilingual/blob/main/examples/complete_features_en.multi"
             target="_blank" rel="noopener" title="Open complete feature example for the selected language">Complete
@@ -287,13 +279,23 @@
 
     </div><!-- #app -->
 
-    <!-- CodeMirror 5 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"
-      crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/overlay.min.js"
-      crossorigin="anonymous"></script>
+    <script>
+      window.MonacoEnvironment = {
+        getWorkerUrl: function (_moduleId, label) {
+          if (label === 'json') {
+            return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+              self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/' };
+              importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/base/worker/workerMain.js');
+            `);
+          }
+          return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(`
+            self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/' };
+            importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/base/worker/workerMain.js');
+          `);
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
     <script type="module" src="./assets/main.js"></script>
   </body>
 

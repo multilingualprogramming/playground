@@ -8,45 +8,25 @@
 
 import { EXAMPLES, EXAMPLES_MEDIUM, EXAMPLES_ADVANCED } from './examples.js';
 
-/* ── DOM refs used by the editor module ─────────────────────────── */
-const $lang        = document.getElementById('lang-select');
-const $exampleSel  = document.getElementById('example-select');
-const $badge       = document.getElementById('lang-badge');
+const MONACO_BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs';
+
+const $lang = document.getElementById('lang-select');
+const $exampleSel = document.getElementById('example-select');
+const $badge = document.getElementById('lang-badge');
 const $exampleLink = document.getElementById('complete-features-link');
+const $editorHost = document.getElementById('code-area');
+const $editorWrapper = document.getElementById('editor-wrapper');
 
-/* ── CodeMirror instance ─────────────────────────────────────────── */
-const currentTheme = document.documentElement.getAttribute('data-theme');
-export const editor = CodeMirror.fromTextArea(
-  document.getElementById('code-area'),
-  {
-    mode: 'python',
-    theme: currentTheme === 'dark' ? 'dracula' : 'eclipse',
-    lineNumbers: true,
-    indentUnit: 4, tabSize: 4, indentWithTabs: false,
-    lineWrapping: false, autofocus: true,
-    // extraKeys (Ctrl-Enter / Cmd-Enter) are wired in main.js to avoid
-    // a circular import with runtime.js.
-  }
-);
+export let editor = null;
+let monacoApi = null;
+let editorReadyPromise = null;
+let errorDecorations = null;
+let resizeObserver = null;
 
-editor.getWrapperElement().setAttribute('role', 'textbox');
-editor.getWrapperElement().setAttribute('aria-multiline', 'true');
-editor.getWrapperElement().setAttribute('aria-labelledby', 'editor-pane-title');
-editor.getInputField().setAttribute('aria-label', 'Source code editor');
-
-export function resizeEditor() {
-  const w = document.getElementById('editor-wrapper');
-  editor.setSize('100%', w.clientHeight);
-}
-window.addEventListener('resize', resizeEditor);
-setTimeout(resizeEditor, 60);
-
-/* ── Example loading ─────────────────────────────────────────────── */
-export function loadExample(lang, level) {
-  const map = level === 'advanced' ? EXAMPLES_ADVANCED
-            : level === 'medium'   ? EXAMPLES_MEDIUM
-            : EXAMPLES;
-  editor.setValue(map[lang] || map.en);
+function loadExampleMap(level) {
+  if (level === 'advanced') return EXAMPLES_ADVANCED;
+  if (level === 'medium') return EXAMPLES_MEDIUM;
+  return EXAMPLES;
 }
 
 function sanitizeLangCode(lang) {
@@ -60,163 +40,212 @@ function sanitizeLangCode(lang) {
   return allLangs.has(raw) ? raw : fallback;
 }
 
-export function loadLang(lang) {
-  const safeLang = sanitizeLangCode(lang);
-  const level = $exampleSel ? $exampleSel.value : 'basics';
-  loadExample(safeLang, level);
-  $badge.textContent = safeLang;
-  const isRtl = safeLang === 'ar';
-  const wrapper = editor.getWrapperElement();
-  wrapper.style.direction = 'ltr';
-  wrapper.classList.toggle('editor-rtl', isRtl);
-  editor.setOption('direction', isRtl ? 'rtl' : 'ltr');
-  editor.setOption('lineWrapping', isRtl);
-  applyEditorHighlighting(safeLang);
-  updateCompleteFeaturesLink(safeLang);
-  editor.refresh();
-}
-
 function updateCompleteFeaturesLink(lang) {
   if (!$exampleLink) return;
   const langCode = lang || 'en';
   $exampleLink.href = `https://github.com/johnsamuelwrites/multilingual/blob/main/examples/complete_features_${langCode}.multi`;
-  $exampleLink.textContent = `📘 Complete features (${langCode}) ✨`;
+  $exampleLink.textContent = `Complete features (${langCode})`;
 }
 
-/* ── Keyword highlighting ────────────────────────────────────────── */
-export let languageKeywords = new Map();
-let unicodeWordRegex = null;
-
-try {
-  unicodeWordRegex = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u');
-} catch (_) {
-  unicodeWordRegex = null;
+function setEditorDirection(lang) {
+  if (!$editorHost) return;
+  const isRtl = lang === 'ar';
+  $editorHost.dir = isRtl ? 'rtl' : 'ltr';
+  $editorHost.classList.toggle('editor-rtl', isRtl);
 }
 
-function isWordChar(ch) {
-  if (!ch) return false;
-  if (unicodeWordRegex) return unicodeWordRegex.test(ch);
-  return /[A-Za-z0-9_]/.test(ch) || (ch.codePointAt(0) > 127 && !/\s/.test(ch));
-}
-
-function normalizeKeywordEntry(value) {
-  if (Array.isArray(value)) return value;
-  return typeof value === 'string' ? [value] : [];
-}
-
-function extractKeywordsForLanguage(keywordSpec, lang) {
-  const collected = new Set();
-  const categories = keywordSpec && keywordSpec.categories ? keywordSpec.categories : {};
-  Object.values(categories).forEach(group => {
-    Object.values(group).forEach(mapping => {
-      normalizeKeywordEntry(mapping[lang]).forEach(word => {
-        if (typeof word === 'string') {
-          const trimmed = word.trim();
-          if (trimmed) collected.add(trimmed);
-        }
-      });
-    });
+function createTheme(theme) {
+  if (!monacoApi) return;
+  const isDark = theme === 'dark';
+  monacoApi.editor.defineTheme('ml-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'keyword', foreground: 'ff79c6', fontStyle: 'bold' },
+      { token: 'string', foreground: '50fa7b' },
+      { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
+      { token: 'number', foreground: 'bd93f9' },
+      { token: 'operator', foreground: '8be9fd' },
+      { token: 'identifier', foreground: 'e2e8f0' },
+    ],
+    colors: {
+      'editor.background': '#1c1e2e',
+      'editorLineNumber.foreground': '#64748b',
+      'editorLineNumber.activeForeground': '#e2e8f0',
+      'editorIndentGuide.background1': '#2b3157',
+      'editor.selectionBackground': '#33415588',
+      'editor.inactiveSelectionBackground': '#1f293788',
+    },
   });
-  return [...collected].sort((a, b) => b.length - a.length);
+  monacoApi.editor.defineTheme('ml-light', {
+    base: 'vs',
+    inherit: true,
+    rules: [
+      { token: 'keyword', foreground: 'c2185b', fontStyle: 'bold' },
+      { token: 'string', foreground: '166534' },
+      { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+      { token: 'number', foreground: '7c3aed' },
+      { token: 'operator', foreground: '0891b2' },
+      { token: 'identifier', foreground: '1e293b' },
+    ],
+    colors: {
+      'editor.background': '#fefefe',
+      'editorLineNumber.foreground': '#94a3b8',
+      'editorLineNumber.activeForeground': '#1e293b',
+      'editorIndentGuide.background1': '#dbe4ff',
+      'editor.selectionBackground': '#c7d2fe80',
+      'editor.inactiveSelectionBackground': '#e2e8f080',
+    },
+  });
+  monacoApi.editor.setTheme(isDark ? 'ml-dark' : 'ml-light');
 }
 
-async function fetchKeywordSpec() {
-  const candidates = [
-    './assets/keywords.json',
-    '../assets/keywords.json',
-    'assets/keywords.json',
-    '../multilingualprogramming/resources/usm/keywords.json',
-    './multilingualprogramming/resources/usm/keywords.json',
-    'https://raw.githubusercontent.com/johnsamuelwrites/multilingual/main/multilingualprogramming/resources/usm/keywords.json',
-  ];
-  for (const url of candidates) {
-    try {
-      const resp = await fetch(url, { cache: 'no-cache' });
-      if (!resp.ok) continue;
-      return await resp.json();
-    } catch (_) { /* try next candidate */ }
+function loadMonaco() {
+  if (monacoApi) return Promise.resolve(monacoApi);
+  if (window.monaco?.editor) {
+    monacoApi = window.monaco;
+    return Promise.resolve(monacoApi);
   }
-  return null;
+  return new Promise((resolve, reject) => {
+    if (typeof window.require !== 'function') {
+      reject(new Error('Monaco loader is unavailable.'));
+      return;
+    }
+    window.require.config({ paths: { vs: MONACO_BASE } });
+    window.require(['vs/editor/editor.main'], () => {
+      monacoApi = window.monaco;
+      resolve(monacoApi);
+    }, reject);
+  });
 }
 
-function applyKeywordOnlyMode(lang, keywords) {
-  const modeName = `ml-keywords-${lang}`;
-  if (!CodeMirror.modes[modeName]) {
-    const keywordSet = new Set(keywords);
-    const isDigit    = (ch) => !!ch && ch >= '0' && ch <= '9';
-    const isOperator = (ch) => !!ch && /[+\-*/%=<>!&|^~:,.[\](){}]/.test(ch);
-    CodeMirror.defineMode(modeName, () => ({
-      token(stream) {
-        const ch = stream.peek();
-        if (!ch) return null;
-        if (/\s/.test(ch)) { stream.next(); return null; }
-        if (ch === '#') { stream.skipToEnd(); return 'comment'; }
-        if (ch === '"' || ch === "'") {
-          const quote = stream.next();
-          let escaped = false;
-          while (!stream.eol()) {
-            const c = stream.next();
-            if (escaped) { escaped = false; continue; }
-            if (c === '\\') { escaped = true; continue; }
-            if (c === quote) break;
-          }
-          return 'string';
-        }
-        if (isDigit(ch)) { stream.eatWhile(/[0-9._]/); return 'number'; }
-        if (isWordChar(ch)) {
-          let word = '';
-          while (!stream.eol() && isWordChar(stream.peek())) word += stream.next();
-          return keywordSet.has(word) ? 'keyword' : null;
-        }
-        if (isOperator(ch)) { stream.next(); return 'operator'; }
-        stream.next();
-        return null;
+async function registerLanguage() {
+  const monaco = await loadMonaco();
+  if (monaco.languages.getLanguages().some(lang => lang.id === 'multilingual')) return monaco;
+
+  monaco.languages.register({ id: 'multilingual' });
+
+  const response = await fetch('./assets/monarch.json', { cache: 'no-cache' });
+  if (!response.ok) throw new Error(`Could not load monarch.json (${response.status})`);
+  const grammar = await response.json();
+  if (!grammar || typeof grammar.tokenizer !== 'object' || grammar.tokenizer === null) {
+    throw new Error('Invalid monarch.json: missing tokenizer object.');
+  }
+  monaco.languages.setMonarchTokensProvider('multilingual', grammar);
+  monaco.languages.setLanguageConfiguration('multilingual', {
+    comments: { lineComment: '#' },
+    brackets: grammar.brackets || [['(', ')'], ['[', ']'], ['{', '}']],
+    autoClosingPairs: (grammar.autoClosingPairs || []).map(pair =>
+      Array.isArray(pair) ? { open: pair[0], close: pair[1] } : pair),
+    surroundingPairs: (grammar.surroundingPairs || []).map(pair =>
+      Array.isArray(pair) ? { open: pair[0], close: pair[1] } : pair),
+  });
+  return monaco;
+}
+
+function attachResizeObserver() {
+  if (!$editorWrapper || resizeObserver || !editor) return;
+  resizeObserver = new ResizeObserver(() => resizeEditor());
+  resizeObserver.observe($editorWrapper);
+  window.addEventListener('resize', resizeEditor);
+}
+
+export async function initEditor() {
+  if (editorReadyPromise) return editorReadyPromise;
+  editorReadyPromise = (async () => {
+    const monaco = await registerLanguage();
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    createTheme(theme);
+    editor = monaco.editor.create($editorHost, {
+      value: '',
+      language: 'multilingual',
+      automaticLayout: false,
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      fontSize: 13.5,
+      lineHeight: 22,
+      minimap: { enabled: false },
+      scrollBeyondLastLine: false,
+      wordWrap: 'off',
+      tabSize: 4,
+      insertSpaces: true,
+      renderWhitespace: 'selection',
+      padding: { top: 10, bottom: 10 },
+      unicodeHighlight: {
+        ambiguousCharacters: false,
+        invisibleCharacters: false,
       },
-    }));
-  }
-  editor.setOption('mode', modeName);
-  editor.refresh();
+      theme: theme === 'dark' ? 'ml-dark' : 'ml-light',
+    });
+    editor.onDidChangeModelContent(() => clearErrorLines());
+    errorDecorations = editor.createDecorationsCollection([]);
+    attachResizeObserver();
+    loadLang('en');
+    resizeEditor();
+    return editor;
+  })();
+  return editorReadyPromise;
 }
 
-export function applyEditorHighlighting(lang) {
-  const keywords = languageKeywords.get(lang);
-  if (!keywords || !keywords.length || lang === 'en') {
-    editor.setOption('mode', 'python');
-    editor.refresh();
-    return;
-  }
-  applyKeywordOnlyMode(lang, keywords);
+export function resizeEditor() {
+  if (!editor || !$editorWrapper) return;
+  const width = $editorWrapper.clientWidth || 0;
+  const height = $editorWrapper.clientHeight || 0;
+  if (width > 0 && height > 0) editor.layout({ width, height });
 }
 
-export async function initLanguageKeywords() {
-  const spec = await fetchKeywordSpec();
-  if (!spec) {
-    console.warn('Could not load keywords.json; using default python highlighting.');
-    return;
-  }
-  ($lang ? Array.from($lang.options).map(opt => opt.value) : []).forEach(code => {
-    languageKeywords.set(code, extractKeywordsForLanguage(spec, code));
-  });
+export function loadExample(lang, level) {
+  if (!editor) return;
+  const map = loadExampleMap(level);
+  editor.setValue(map[lang] || map.en || '');
 }
 
-/* ── Error line highlighting ─────────────────────────────────────── */
+export function loadLang(lang) {
+  const safeLang = sanitizeLangCode(lang);
+  const level = $exampleSel ? $exampleSel.value : 'basics';
+  loadExample(safeLang, level);
+  if ($badge) $badge.textContent = safeLang;
+  setEditorDirection(safeLang);
+  updateCompleteFeaturesLink(safeLang);
+  applyEditorHighlighting(safeLang);
+  resizeEditor();
+}
+
+export function applyEditorHighlighting(_lang) {
+  if (!editor || !monacoApi) return;
+  const model = editor.getModel();
+  if (model) monacoApi.editor.setModelLanguage(model, 'multilingual');
+}
+
+export function applyEditorTheme(theme) {
+  createTheme(theme);
+}
+
+export function setRunShortcut(handler) {
+  if (!editor || !monacoApi) return;
+  editor.addCommand(monacoApi.KeyMod.CtrlCmd | monacoApi.KeyCode.Enter, handler);
+}
+
 export function clearErrorLines() {
-  for (let i = 0; i < editor.lineCount(); i++) {
-    editor.removeLineClass(i, 'background', 'error-line');
-  }
+  if (errorDecorations) errorDecorations.clear();
 }
 
 export function highlightErrorLine(errText) {
   clearErrorLines();
-  const m = errText.match(/line[:\s]+(\d+)/i)
+  if (!editor || !monacoApi || !errorDecorations) return;
+  const match = errText.match(/line[:\s]+(\d+)/i)
     || errText.match(/at line (\d+)/i)
     || errText.match(/:(\d+):/);
-  if (!m) return;
-  const lineNum = parseInt(m[1], 10) - 1;
-  if (lineNum >= 0 && lineNum < editor.lineCount()) {
-    editor.addLineClass(lineNum, 'background', 'error-line');
-    editor.scrollIntoView({ line: lineNum, ch: 0 }, 80);
-  }
+  if (!match) return;
+  const lineNumber = parseInt(match[1], 10);
+  const model = editor.getModel();
+  if (!model || lineNumber < 1 || lineNumber > model.getLineCount()) return;
+  errorDecorations.set([{
+    range: new monacoApi.Range(lineNumber, 1, lineNumber, model.getLineMaxColumn(lineNumber)),
+    options: {
+      isWholeLine: true,
+      className: 'error-line',
+      linesDecorationsClassName: 'error-glyph-margin',
+    },
+  }]);
+  editor.revealLineInCenter(lineNumber);
 }
-
-editor.on('change', clearErrorLines);

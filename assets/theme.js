@@ -10,8 +10,8 @@ const THEME_KEY = 'ml-playground-theme';
 const $themeToggle = document.getElementById('theme-toggle');
 
 /**
- * Apply a theme to the page. Optionally updates the CodeMirror editor
- * if one is provided (avoids a TDZ error during early init).
+ * Apply a theme to the page. Optionally updates the editor instance
+ * if one is provided.
  */
 export function applyTheme(theme, editorInstance) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -25,7 +25,10 @@ export function applyTheme(theme, editorInstance) {
   localStorage.setItem(THEME_KEY, theme);
   if (editorInstance) {
     try {
-      editorInstance.setOption('theme', theme === 'dark' ? 'dracula' : 'eclipse');
+      if (typeof editorInstance.setTheme === 'function') editorInstance.setTheme(theme);
+      else if (typeof editorInstance.updateOptions === 'function') {
+        editorInstance.updateOptions({ theme: theme === 'dark' ? 'ml-dark' : 'ml-light' });
+      }
     } catch (_) { /* editor not yet initialized */ }
   }
 }

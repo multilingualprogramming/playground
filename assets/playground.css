@@ -26,7 +26,6 @@
   --text-muted: #94a3b8;
   --code-bg: #0a0a1e;
   --editor-bg: #282a36;
-  --cm-theme: dracula;
   --radius: 10px;
   --radius-sm: 6px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
@@ -55,7 +54,6 @@
   --text-muted: #475569;
   --code-bg: #f8fafc;
   --editor-bg: #f8f8f2;
-  --cm-theme: eclipse;
   --radius: 10px;
   --radius-sm: 6px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -581,61 +579,34 @@ header {
   min-height: 0;
 }
 
-#editor-wrapper .CodeMirror {
+#code-area {
+  width: 100%;
   height: 100%;
-  font-family: var(--mono);
-  font-size: 13.5px;
-  line-height: 1.65;
-  direction: ltr;
+  min-height: 0;
 }
 
-#editor-wrapper .CodeMirror-scroll {
-  direction: ltr;
+#editor-wrapper .monaco-editor,
+#editor-wrapper .monaco-editor-background,
+#editor-wrapper .monaco-editor .margin {
+  background: transparent !important;
 }
 
-#editor-wrapper .CodeMirror-line,
-#editor-wrapper .CodeMirror-line-like,
-#editor-wrapper .CodeMirror pre {
+#editor-wrapper .monaco-editor .view-lines,
+#editor-wrapper .monaco-editor .inputarea,
+#editor-wrapper .monaco-editor .lines-content {
   unicode-bidi: plaintext;
   text-align: start;
 }
 
-#editor-wrapper .CodeMirror.editor-rtl .CodeMirror-lines {
+#editor-wrapper .editor-rtl .monaco-editor .view-lines,
+#editor-wrapper .editor-rtl .monaco-editor .inputarea,
+#editor-wrapper .editor-rtl .monaco-editor .lines-content {
   direction: rtl;
 }
 
-#editor-wrapper .CodeMirror span.cm-keyword {
-  color: #ff79c6 !important;
-  font-weight: 600;
-}
-
-#editor-wrapper .CodeMirror span.cm-string {
-  color: #50fa7b !important;
-}
-
-[data-theme="light"] #editor-wrapper .CodeMirror span.cm-string {
-  color: #166534 !important;
-}
-
-#editor-wrapper .CodeMirror span.cm-comment {
-  color: #6272a4 !important;
-  font-style: italic;
-}
-
-#editor-wrapper .CodeMirror span.cm-number {
-  color: #bd93f9 !important;
-}
-
-#editor-wrapper .CodeMirror span.cm-operator {
-  color: #8be9fd !important;
-}
-
-[data-theme="dark"] #editor-wrapper .CodeMirror {
-  background: #1c1e2e;
-}
-
-[data-theme="light"] #editor-wrapper .CodeMirror {
-  background: #fefefe;
+#editor-wrapper .monaco-editor .current-line,
+#editor-wrapper .monaco-editor .view-overlays .current-line {
+  border: none !important;
 }
 
 /* Output pane */
@@ -1092,7 +1063,7 @@ footer a:hover {
 }
 
 /* Error line highlight */
-.error-line {
+.monaco-editor .error-line {
   background: rgba(248, 113, 113, 0.14) !important;
 }
 
@@ -1154,7 +1125,7 @@ footer a:hover {
     order: 11;
   }
 
-  #editor-wrapper .CodeMirror {
+  #code-area {
     min-height: 18rem;
   }
 

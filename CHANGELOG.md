@@ -34,3 +34,6 @@ First tagged release of the browser playground.
 ### Changed
 
 - Updated the playground's complete-feature example links and visible source-extension copy from `.ml` to `.multi` to match the renamed upstream example files.
+- Migrated the browser editor from CodeMirror 5 to Monaco Editor while preserving the existing Pyodide runtime flow, share links, theme toggle, keyboard shortcuts, and split-pane behavior.
+- Pinned browser syntax highlighting to `tree-sitter-multilingual` by shipping a generated `assets/monarch.json` tokenizer artifact from the grammar repository.
+- Updated the existing CI workflows to check out `multilingualprogramming/tree-sitter-multilingual` and fail if the pinned Monaco tokenizer drifts from the generated upstream artifact.
